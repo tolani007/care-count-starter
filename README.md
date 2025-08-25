@@ -1,14 +1,15 @@
 ---
-title: Streamlit Template Space
+title: Care Count
 emoji: 🚀
 colorFrom: red
 colorTo: red
 sdk: docker
 app_port: 8501
 tags:
-  - streamlit
+- streamlit
 pinned: false
-short_description: Streamlit template space
+short_description: BLIP-assisted inventory logging for a food bank
+license: mit
 ---
 
 # Welcome to Streamlit!
