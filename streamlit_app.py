@@ -25,8 +25,8 @@ def get_secret(name: str, default: str | None = None) -> str | None:
     # HF Spaces: prefers env vars; Streamlit local: st.secrets
     return os.getenv(name) or st.secrets.get(name, default)
 
-SUPABASE_URL = get_secret("https://oudjcqhyldpncjbxohsg.supabase.co")
-SUPABASE_KEY = get_secret("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZGpjcWh5bGRwbmNqYnhvaHNnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTMwODI0NCwiZXhwIjoyMDcwODg0MjQ0fQ.XIbefOeVKvvucrIDmt9-lWLz4egMM3Alc-qrznXT6A4")
+SUPABASE_URL = get_secret("SUPABASE_URL")
+SUPABASE_KEY = get_secret("SUPABASE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     st.error("Missing Supabase creds. Add SUPABASE_URL & SUPABASE_KEY in Space → Settings → Secrets.")
