@@ -26,7 +26,7 @@ def get_secret(name: str, default: str | None = None) -> str | None:
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("https://oudjcqhyldpncjbxohsg.supabase.co")
-SUPABASE_KEY = get_secret("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZGpjcWh5bGRwbmNqYnhvaHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzMDgyNDQsImV4cCI6MjA3MDg4NDI0NH0.SYwTtCe3r7WOZ25CRggL-lBkvGPjKnQhY_dT4Kjv9Dg
+SUPABASE_KEY = get_secret("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZGpjcWh5bGRwbmNqYnhvaHNnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTMwODI0NCwiZXhwIjoyMDcwODg0MjQ0fQ.XIbefOeVKvvucrIDmt9-lWLz4egMM3Alc-qrznXT6A4")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     st.error("Missing Supabase creds. Add SUPABASE_URL & SUPABASE_KEY in Space → Settings → Secrets.")
