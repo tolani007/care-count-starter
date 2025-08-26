@@ -1,10 +1,6 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-
-streamlit>=1.31
-pandas>=2.2
-pillow>=10.2
-transformers>=4.44
-safetensors>=0.4.3
-torch>=2.6
-torchvision>=0.19
+streamlit>=1.33
+pandas>=2.1
+Pillow>=10.1
 supabase>=2.5
+huggingface_hub>=0.24.6
+
