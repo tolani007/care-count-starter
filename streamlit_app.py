@@ -77,37 +77,59 @@ def center_crops(img: Image.Image, n=2, frac=0.80) -> List[Image.Image]:
         crops.append(img.crop((x0, y0, x0 + cw, y0 + ch)))
     return crops
 
-# ------------------------ Remote calls with surfaced errors ------------------------
-def remote_trocr(img: Image.Image) -> Tuple[str, str | None]:
+# ------------------------ Remote calls (HF Inference API) ------------------------
+def remote_trocr(img: Image.Image) -> tuple[str, str | None]:
+    """OCR with TrOCR via image_to_text. Works across hub client versions."""
     try:
-        out = hf.image_to_text(image=_to_png_bytes(img), model=TROCR_MODEL, timeout=60)
-        if isinstance(out, list) and out:
-            out = out[0].get("generated_text", "")
-        return (out or "").strip(), None
+        out = hf.image_to_text(image=_to_png_bytes(img), model=TROCR_MODEL)
+        # normalize possible return shapes
+        if isinstance(out, str):
+            text = out.strip()
+        elif isinstance(out, list) and out:
+            # some deployments return [{"generated_text": "..."}]
+            text = (out[0].get("generated_text") or out[0].get("text") or "").strip()
+        elif isinstance(out, dict):
+            text = (out.get("generated_text") or out.get("text") or "").strip()
+        else:
+            text = ""
+        return text, None
     except Exception as e:
         return "", f"TROCR error: {e}"
 
-def remote_vqa(img: Image.Image, question: str) -> Tuple[str, str | None]:
+def remote_vqa(img: Image.Image, question: str) -> tuple[str, str | None]:
+    """BLIP-VQA call without timeout kwarg; normalize result shapes."""
     try:
         out = hf.visual_question_answering(
             image=_to_png_bytes(img),
             question=question,
             model=VQA_MODEL,
-            timeout=60,
         )
-        if isinstance(out, list) and out:
+        if isinstance(out, str):
+            ans = out.strip()
+        elif isinstance(out, list) and out:
+            # typically [{"answer": "...", "score": ...}]
             ans = (out[0].get("answer") or "").strip()
-            return ans, None
-        return (out or "").strip(), None
+        elif isinstance(out, dict):
+            ans = (out.get("answer") or "").strip()
+        else:
+            ans = ""
+        return ans, None
     except Exception as e:
         return "", f"VQA error: {e}"
 
-def remote_caption(img: Image.Image) -> Tuple[str, str | None]:
+def remote_caption(img: Image.Image) -> tuple[str, str | None]:
+    """BLIP caption fallback; normalize return shapes."""
     try:
-        out = hf.image_to_text(image=_to_png_bytes(img), model=CAP_MODEL, timeout=60)
-        if isinstance(out, list) and out:
-            out = out[0].get("generated_text", "")
-        return (out or "").strip(), None
+        out = hf.image_to_text(image=_to_png_bytes(img), model=CAP_MODEL)
+        if isinstance(out, str):
+            cap = out.strip()
+        elif isinstance(out, list) and out:
+            cap = (out[0].get("generated_text") or out[0].get("text") or "").strip()
+        elif isinstance(out, dict):
+            cap = (out.get("generated_text") or out.get("text") or "").strip()
+        else:
+            cap = ""
+        return cap, None
     except Exception as e:
         return "", f"Caption error: {e}"
 
