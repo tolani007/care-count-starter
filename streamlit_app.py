@@ -1,4 +1,6 @@
 # --- streamlit_app.py (Care Count Inventory via HF Inference API) ---
+import base64
+import requests
 
 import os
 os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue
