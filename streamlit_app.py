@@ -1,315 +1,249 @@
-# --- streamlit_app.py (Care Count Inventory via HF Inference API) ---
-import base64
-import requests
+# --- Care Count Inventory (VQA-only suggestion, free HF API) ---
 
 import os
-os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue
+os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue on Spaces
 os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 
 import io
 import time
-import re
-from typing import List, Dict, Any, Tuple
-
+import base64
+import requests
 import pandas as pd
 import streamlit as st
-from PIL import Image, ImageOps
+from PIL import Image
 from supabase import create_client, Client
-from huggingface_hub import InferenceClient
 
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
-st.caption("Label reading with TrOCR + BLIP-VQA (HF Inference API) • Supabase-backed")
+st.caption("BLIP-VQA–assisted inventory logging with Supabase (free HF Inference API)")
 
-# ------------------------ Secrets / Clients ------------------------
+# ------------------------ Secrets & clients ------------------------
 def get_secret(name: str, default: str | None = None) -> str | None:
+    # Reads from env first (HF Variables), then from st.secrets (HF Secrets)
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("SUPABASE_URL")
 SUPABASE_KEY = get_secret("SUPABASE_KEY")
-HF_TOKEN     = get_secret("HF_TOKEN", "")
-
 if not SUPABASE_URL or not SUPABASE_KEY:
-    st.error("❌ Missing Supabase creds. Add SUPABASE_URL & SUPABASE_KEY in Space → Settings → Secrets.")
-    st.stop()
-
-if not HF_TOKEN:
-    st.error("❌ Missing HF_TOKEN. Create a **Read** token at https://huggingface.co/settings/tokens "
-             "and add it in Space → Settings → Secrets → HF_TOKEN. Then restart the Space.")
+    st.error("Missing Supabase creds. Add SUPABASE_URL & SUPABASE_KEY in Settings → Secrets.")
     st.stop()
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-hf = InferenceClient(token=HF_TOKEN)
 
-# Remote model ids (kept small & free-tier friendly)
-TROCR_MODEL = "microsoft/trocr-base-printed"          # OCR
-VQA_MODEL   = "Salesforce/blip-vqa-base"              # VQA
-CAP_MODEL   = "Salesforce/blip-image-captioning-base" # Caption fallback
+# ---- VQA model config (free serverless endpoint) ----
+HF_TOKEN = get_secret("HF_TOKEN")  # “Read” token is fine
+VQA_MODEL = os.getenv("VQA_MODEL", "Salesforce/blip-vqa-capfilt-large")  # better than base; still free
 
-# ------------------------ Image utilities ------------------------
+# ------------------------ Tiny image util ------------------------
 def _to_png_bytes(img: Image.Image) -> bytes:
-    buf = io.BytesIO()
-    img.save(buf, format="PNG", optimize=True)
-    return buf.getvalue()
+    b = io.BytesIO()
+    img.save(b, format="PNG")
+    return b.getvalue()
 
-def resize_short(img: Image.Image, short=640) -> Image.Image:
-    w, h = img.size
-    s = min(w, h)
-    if s <= short:
-        return img
-    scale = short / s
-    return img.resize((int(w * scale), int(h * scale)))
-
-def autoprocess(img: Image.Image) -> Image.Image:
-    # Light preprocessing for better OCR on phone shots
-    img = resize_short(img, 640)
-    img = ImageOps.autocontrast(img)
-    return img
-
-def center_crops(img: Image.Image, n=2, frac=0.80) -> List[Image.Image]:
-    """Few center crops to keep API usage low."""
-    crops = []
-    w, h = img.size
-    for i in range(n):
-        f = frac + i * 0.1
-        cw, ch = int(w * f), int(h * f)
-        x0 = (w - cw) // 2
-        y0 = (h - ch) // 2
-        crops.append(img.crop((x0, y0, x0 + cw, y0 + ch)))
-    return crops
-
-# ------------------------ Remote calls (HF Inference API) ------------------------
-def remote_trocr(img: Image.Image) -> tuple[str, str | None]:
-    """OCR with TrOCR via image_to_text. Works across hub client versions."""
+# ------------------------ HTTP VQA helper ------------------------
+def vqa_http(img: Image.Image, question: str) -> tuple[str, str | None]:
+    """
+    Calls HF Inference API for 'image-question-answering' (BLIP-VQA).
+    No huggingface_hub client; pure requests to avoid kwarg/version issues.
+    Returns (answer, error).
+    """
     try:
-        out = hf.image_to_text(image=_to_png_bytes(img), model=TROCR_MODEL)
-        # normalize possible return shapes
-        if isinstance(out, str):
-            text = out.strip()
-        elif isinstance(out, list) and out:
-            # some deployments return [{"generated_text": "..."}]
-            text = (out[0].get("generated_text") or out[0].get("text") or "").strip()
-        elif isinstance(out, dict):
-            text = (out.get("generated_text") or out.get("text") or "").strip()
-        else:
-            text = ""
-        return text, None
-    except Exception as e:
-        return "", f"TROCR error: {e}"
+        img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
+        url = f"https://api-inference.huggingface.co/models/{VQA_MODEL}"
+        headers = {"Accept": "application/json"}
+        if HF_TOKEN:
+            headers["Authorization"] = f"Bearer {HF_TOKEN}"
+        payload = {"inputs": {"question": question, "image": img_b64}}
 
-def remote_vqa(img: Image.Image, question: str) -> tuple[str, str | None]:
-    """BLIP-VQA call without timeout kwarg; normalize result shapes."""
-    try:
-        out = hf.visual_question_answering(
-            image=_to_png_bytes(img),
-            question=question,
-            model=VQA_MODEL,
-        )
-        if isinstance(out, str):
-            ans = out.strip()
-        elif isinstance(out, list) and out:
-            # typically [{"answer": "...", "score": ...}]
-            ans = (out[0].get("answer") or "").strip()
+        r = requests.post(url, headers=headers, json=payload, timeout=60)
+        if r.status_code != 200:
+            return "", f"VQA HTTP {r.status_code}: {r.text[:200]}"
+
+        out = r.json()
+        # API sometimes returns list[dict] or dict
+        if isinstance(out, list) and out:
+            ans = out[0].get("answer") or out[0].get("generated_text") or ""
         elif isinstance(out, dict):
-            ans = (out.get("answer") or "").strip()
+            ans = out.get("answer") or out.get("generated_text") or ""
         else:
             ans = ""
-        return ans, None
+        return (ans or "").strip(), None
     except Exception as e:
-        return "", f"VQA error: {e}"
+        return "", f"VQA HTTP error: {e}"
 
-def remote_caption(img: Image.Image) -> tuple[str, str | None]:
-    """BLIP caption fallback; normalize return shapes."""
-    try:
-        out = hf.image_to_text(image=_to_png_bytes(img), model=CAP_MODEL)
-        if isinstance(out, str):
-            cap = out.strip()
-        elif isinstance(out, list) and out:
-            cap = (out[0].get("generated_text") or out[0].get("text") or "").strip()
-        elif isinstance(out, dict):
-            cap = (out.get("generated_text") or out.get("text") or "").strip()
-        else:
-            cap = ""
-        return cap, None
-    except Exception as e:
-        return "", f"Caption error: {e}"
-
-# ------------------------ Catalog normalizer (extend anytime) ------------------------
-BRANDS: Dict[str, str] = {
-    "Degree": r"\bdegree\b",
-    "Dove": r"\bdove\b",
-    "Heinz": r"\bheinz\b",
-    "Kellogg's": r"\bkellogg'?s\b",
-    "Barilla": r"\bbarilla\b",
-    "Campbell": r"\bcampbell'?s?\b",
-    "Unilever": r"\bunilever\b",
-    # Add food-bank brands as you encounter them…
+# ------------------------ Normalizer ------------------------
+BRAND_ALIASES = {
+    "degree": "Degree",
+    "campbell's": "Campbell's",
+    "heinz": "Heinz",
+    "kellogg's": "Kellogg's",
+    "quaker": "Quaker",
+    "pepsi": "Pepsi",
+    "coke": "Coca-Cola",
 }
 
-TYPES: Dict[str, str] = {
-    "Antiperspirant Spray": r"\b(antiperspirant|dry\s*spray)\b",
-    "Deodorant": r"\bdeodorant\b",
-    "Cereal": r"\bcereal\b",
-    "Pasta": r"\bpasta\b",
-    "Soup": r"\bsoup\b",
-    "Rice": r"\brice\b",
-    "Beans": r"\bbeans?\b",
-    "Pasta Sauce": r"\b(pasta|tomato)\s*sauce\b",
-    "Toothpaste": r"\btoothpaste\b",
-    # Extend freely…
+TYPE_ALIASES = {
+    "antiperspirant": "Antiperspirant",
+    "deodorant": "Deodorant",
+    "toothpaste": "Toothpaste",
+    "tooth brush": "Toothbrush",
+    "cereal": "Cereal",
+    "soup": "Soup",
+    "beans": "Beans",
+    "rice": "Rice",
+    "pasta": "Pasta",
+    "sauce": "Sauce",
+    "soda": "Soda",
 }
 
-BAD    = r"nutrition facts|ingredients?|net wt|barcode|best by|serving size|calories"
-VARIANT = r"\b\d{2,3}H\b|\b(advanced|max|sport|original|unscented|lemonade|spicy|low\s*sodium)\b"
+def _clean_name(s: str) -> str:
+    return (s or "").strip().lower()
 
-def clean(s: str) -> str:
-    s = re.sub(BAD, " ", s, flags=re.I)
-    s = re.sub(r"[^A-Za-z0-9&'’\- ]", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
+def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
+    b = BRAND_ALIASES.get(_clean_name(brand), brand.strip())
+    t = TYPE_ALIASES.get(_clean_name(ptype), ptype.strip())
+    parts = [p for p in [b, t] if p]
+    if parts:
+        return " ".join(parts)
+    if fallback_text:
+        return " ".join(fallback_text.strip().split()[:5])
+    return "Unknown"
 
-def _match(table: Dict[str, str], text: str) -> str | None:
-    for k, pat in table.items():
-        if re.search(pat, text, flags=re.I):
-            return k
-    return None
-
-# ------------------------ Suggestion pipeline ------------------------
-def suggest_item_name(img: Image.Image, economy: bool = True) -> Dict[str, Any]:
+# ------------------------ VQA-only suggestion pipeline ------------------------
+def suggest_name_vqa_only(img: Image.Image) -> dict:
     """
-    Returns dict with:
-      name, ocr_text, vqa_brand, vqa_type, caption, errors[], latency_s, calls{ocr,vqa,cap}
+    Ask two concise VQA questions + one fallback, then normalize.
     """
-    t0 = time.time()
-    err_list: List[str] = []
+    errors = []
+    q_brand = "What is the brand name on the product label? Answer with one or two words."
+    q_type  = "What type of product is this? Answer briefly, like 'Soup', 'Pasta', 'Antiperspirant'."
+    q_name  = "What is the product name or flavor written on the label? Answer with a few words."
 
-    img = autoprocess(img)
+    brand, e1 = vqa_http(img, q_brand);  errors += [e1] if e1 else []
+    ptype, e2 = vqa_http(img, q_type);   errors += [e2] if e2 else []
+    pname, e3 = vqa_http(img, q_name);   errors += [e3] if e3 else []
 
-    # OCR over a couple of crops
-    crops = center_crops(img, n=2 if economy else 4, frac=0.8)
-    ocr_texts = []
-    for c in crops:
-        txt, e = remote_trocr(autoprocess(c))
-        if e: err_list.append(e)
-        if txt: ocr_texts.append(txt)
-    ocr = clean(" ".join(ocr_texts))
-
-    # VQA
-    vqa_brand, e1 = remote_vqa(img, "What brand name is printed on the product label? One or two words only.")
-    if e1: err_list.append(e1)
-    vqa_type, e2  = remote_vqa(img, "What kind of product is this? Use a short noun phrase (e.g., Cereal, Pasta, Soup, Antiperspirant Spray).")
-    if e2: err_list.append(e2)
-
-    # Caption fallback
-    cap, e3 = remote_caption(img)
-    if e3: err_list.append(e3)
-
-    # Normalize
-    fused = " ".join(filter(None, [ocr, vqa_brand, vqa_type, cap]))
-    brand = _match(BRANDS, fused)
-    ptype = _match(TYPES, fused)
-    var_m = re.search(VARIANT, fused, flags=re.I)
-    parts = [brand, ptype, var_m.group(0).upper() if var_m else None]
-    name = " ".join([p for p in parts if p]).strip() or (vqa_brand or ocr or cap or "Unknown").title()
-
+    name = normalize_item(brand, ptype, pname)
     return {
-        "name": name,
-        "ocr_text": ocr,
-        "vqa_brand": vqa_brand,
-        "vqa_type": vqa_type,
-        "caption": cap,
-        "errors": err_list,
-        "latency_s": round(time.time() - t0, 2),
-        "calls": {"ocr": len(crops), "vqa": 2, "cap": 1},
+        "name": name if name else "Unknown",
+        "vqa_brand": brand,
+        "vqa_type": ptype,
+        "vqa_pname": pname,
+        "errors": errors,
     }
 
-# ------------------------ Volunteer auth ------------------------
+# ------------------------ Volunteer login ------------------------
 st.subheader("👤 Volunteer")
+
 with st.form("vol_form", clear_on_submit=True):
     username = st.text_input("Username")
     full_name = st.text_input("Full name")
-    if st.form_submit_button("Add / Continue"):
+    submitted = st.form_submit_button("Add / Continue")
+    if submitted:
         if not (username and full_name):
             st.error("Please fill both fields.")
         else:
-            existing = sb.table("volunteers").select("full_name").execute().data or []
-            names = {row["full_name"].strip().lower() for row in existing}
-            if full_name.strip().lower() not in names:
-                sb.table("volunteers").insert({"username": username, "full_name": full_name}).execute()
-            st.session_state["volunteer"] = username
-            st.success(f"Welcome, {full_name}!")
+            try:
+                existing = sb.table("volunteers").select("full_name").execute().data or []
+                names = {v["full_name"].strip().lower() for v in existing}
+                if full_name.strip().lower() not in names:
+                    sb.table("volunteers").insert({"username": username, "full_name": full_name}).execute()
+                st.session_state["volunteer"] = username
+                st.session_state["volunteer_name"] = full_name
+                st.success(f"Welcome, {full_name}!")
+            except Exception as e:
+                st.error(f"Volunteer add/check failed: {e}")
 
 if "volunteer" not in st.session_state:
     st.info("Add yourself above to start logging.")
     st.stop()
 
-# ------------------------ Scan / Upload & Suggest ------------------------
+# ------------------------ Capture / Upload ------------------------
 st.subheader("📸 Scan label to auto-fill item")
+
 c1, c2 = st.columns(2)
 with c1:
-    cam = st.camera_input("Use your camera (works on phones)")
+    cam = st.camera_input("Use your webcam")
 with c2:
-    up = st.file_uploader("…or upload a photo", type=["png", "jpg", "jpeg"])
+    up = st.file_uploader("…or upload an image", type=["png", "jpg", "jpeg"])
 
-economy = st.toggle("Economy mode (fewer API calls)", value=True)
-
-suggested_name = st.session_state.get("suggested_name", "")
 img_file = cam or up
-
 if img_file:
     img = Image.open(img_file).convert("RGB")
-    st.image(img, caption="Captured", use_container_width=True)
+    st.image(img, use_container_width=True)
 
-    if st.button("🔎 Suggest name"):
-        with st.spinner("Reading label…"):
-            res = suggest_item_name(img, economy=economy)
-        st.success(f"🧠 Suggested: **{res['name']}**  ·  ⏱ {res['latency_s']}s")
-        with st.expander("Debug (OCR / VQA / Caption)"):
-            st.json(res)
-        suggested_name = res["name"]
-        st.session_state["suggested_name"] = suggested_name
+    if st.button("🔍 Suggest name"):
+        t0 = time.time()
+        result = suggest_name_vqa_only(img)
+        st.success(f"🧠 Suggested: **{result['name']}** · ⏱️ {time.time()-t0:.2f}s")
+        with st.expander("🔎 Debug (VQA)"):
+            st.json(result)
+        st.session_state["scanned_item_name"] = result["name"]
 
-# ------------------------ Log item (visit_items) ------------------------
-st.subheader("📥 Add inventory item (this visit)")
-item_name = st.text_input("Item name", value=suggested_name or "")
-quantity  = st.number_input("Quantity", min_value=1, step=1, value=1)
-category  = st.text_input("Category (optional)")
-unit      = st.text_input("Unit (optional, e.g., 'can', 'box', 'spray')")
+# ------------------------ Add inventory item (form unchanged) ------------------------
+st.subheader("📥 Add inventory item")
+
+item_name = st.text_input("Item name", value=st.session_state.get("scanned_item_name", ""))
+quantity = st.number_input("Quantity", min_value=1, step=1, value=1)
+category = st.text_input("Category (optional)")
+expiry = st.date_input("Expiry date (optional)")
 
 if st.button("✅ Log item"):
-    if item_name.strip():
-        try:
-            sb.table("visit_items").insert({
-                "volunteer": st.session_state.get("volunteer", "unknown"),
-                "barcode": None,
-                "item_name": item_name.strip(),
-                "category": category.strip() or None,
-                "unit": unit.strip() or None,
-                "qty": int(quantity),
-                # "timestamp": database default (now())
-            }).execute()
-            st.success("Logged!")
-            st.session_state.pop("suggested_name", None)
-        except Exception as e:
-            st.error(f"Supabase insert failed: {e}")
-    else:
+    if not item_name.strip():
         st.warning("Enter an item name.")
-
-# ------------------------ Live table (visit_items) ------------------------
-st.subheader("📊 Live inventory (recent visit items)")
-try:
-    # Your schema shows column 'timestamp' on visit_items
-    data = sb.table("visit_items").select("*").order("timestamp", desc=True).limit(200).execute().data
-    if data:
-        df = pd.DataFrame(data)
-        st.dataframe(df, use_container_width=True)
-        st.download_button(
-            "⬇️ Export CSV",
-            df.to_csv(index=False).encode("utf-8"),
-            "care_count_visit_items.csv",
-            "text/csv",
-        )
     else:
-        st.caption("No items yet.")
-except Exception as e:
-    st.warning(f"Fetch failed: {e}")
+        # Try 'inventory' table first; if missing, fall back to 'visit_items'
+        try:
+            sb.table("inventory").insert({
+                "item_name": item_name.strip(),
+                "quantity": int(quantity),
+                "category": category.strip() or None,
+                "expiry_date": str(expiry) if expiry else None,
+                "added_by": st.session_state.get("volunteer", "Unknown"),
+            }).execute()
+            st.success("Logged to 'inventory'!")
+        except Exception as e1:
+            # Fallback: visit_items (id, visit_id, timestamp, volunteer, weather_type, temp_c, barcode, item_name, category, unit, qty)
+            try:
+                payload_vi = {
+                    "item_name": item_name.strip(),
+                    "qty": int(quantity),
+                    "category": category.strip() or None,
+                    "volunteer": st.session_state.get("volunteer_name") or st.session_state.get("volunteer") or "Unknown",
+                }
+                sb.table("visit_items").insert(payload_vi).execute()
+                st.success("Logged to 'visit_items'!")
+            except Exception as e2:
+                st.error(f"Insert failed: {e1}\nFallback failed: {e2}")
+
+# ------------------------ Live inventory (tries multiple tables) ------------------------
+st.subheader("📊 Live inventory")
+
+def _try_fetch(table: str):
+    try:
+        return sb.table(table).select("*").order("created_at", desc=True).execute().data
+    except Exception:
+        try:
+            # some tables don’t have created_at
+            return sb.table(table).select("*").limit(1000).execute().data
+        except Exception:
+            return None
+
+data = _try_fetch("inventory")
+if not data:
+    data = _try_fetch("visit_items")
+if not data:
+    data = _try_fetch("inventory_master")
+
+if data:
+    df = pd.DataFrame(data)
+    st.dataframe(df, use_container_width=True)
+    st.download_button(
+        "⬇️ Export CSV",
+        df.to_csv(index=False).encode("utf-8"),
+        "care_count_inventory.csv",
+        "text/csv",
+    )
+else:
+    st.caption("No items yet or tables not found. (Tried: inventory, visit_items, inventory_master)")
