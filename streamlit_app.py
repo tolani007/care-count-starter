@@ -1,6 +1,5 @@
-# --- streamlit_app.py (Care Count Inventory on HF Spaces) ---
+# --- streamlit_app.py (Care Count Inventory via HF Inference API) ---
 
-# Minimal env guards for Spaces containers
 import os
 os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue
 os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
@@ -8,7 +7,7 @@ os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 import io
 import time
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 import pandas as pd
 import streamlit as st
@@ -19,28 +18,32 @@ from huggingface_hub import InferenceClient
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
-st.caption("BLIP-assisted inventory logging with Supabase (HF Inference API)")
+st.caption("Label reading with TrOCR + BLIP-VQA (HF Inference API) • Supabase-backed")
 
 # ------------------------ Secrets / Clients ------------------------
 def get_secret(name: str, default: str | None = None) -> str | None:
-    # Reads from env first (HF Spaces exposes secrets as env), then from st.secrets
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("SUPABASE_URL")
 SUPABASE_KEY = get_secret("SUPABASE_KEY")
-HF_TOKEN     = get_secret("HF_TOKEN", "")  # optional; without it you’ll be rate-limited
+HF_TOKEN     = get_secret("HF_TOKEN", "")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    st.error("Missing Supabase creds. Add SUPABASE_URL and SUPABASE_KEY in Space → Settings → Secrets.")
+    st.error("❌ Missing Supabase creds. Add SUPABASE_URL & SUPABASE_KEY in Space → Settings → Secrets.")
+    st.stop()
+
+if not HF_TOKEN:
+    st.error("❌ Missing HF_TOKEN. Create a **Read** token at https://huggingface.co/settings/tokens "
+             "and add it in Space → Settings → Secrets → HF_TOKEN. Then restart the Space.")
     st.stop()
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-hf = InferenceClient(token=HF_TOKEN or None)
+hf = InferenceClient(token=HF_TOKEN)
 
 # Remote model ids (kept small & free-tier friendly)
-TROCR_MODEL = "microsoft/trocr-base-printed"
-VQA_MODEL   = "Salesforce/blip-vqa-base"
-CAP_MODEL   = "Salesforce/blip-image-captioning-base"
+TROCR_MODEL = "microsoft/trocr-base-printed"          # OCR
+VQA_MODEL   = "Salesforce/blip-vqa-base"              # VQA
+CAP_MODEL   = "Salesforce/blip-image-captioning-base" # Caption fallback
 
 # ------------------------ Image utilities ------------------------
 def _to_png_bytes(img: Image.Image) -> bytes:
@@ -57,13 +60,13 @@ def resize_short(img: Image.Image, short=640) -> Image.Image:
     return img.resize((int(w * scale), int(h * scale)))
 
 def autoprocess(img: Image.Image) -> Image.Image:
-    # Light, fast preprocessing that boosts OCR/VQA on phones
+    # Light preprocessing for better OCR on phone shots
     img = resize_short(img, 640)
     img = ImageOps.autocontrast(img)
     return img
 
 def center_crops(img: Image.Image, n=2, frac=0.80) -> List[Image.Image]:
-    """N center crops from tight to wider; keeps API calls low for free tier."""
+    """Few center crops to keep API usage low."""
     crops = []
     w, h = img.size
     for i in range(n):
@@ -74,17 +77,17 @@ def center_crops(img: Image.Image, n=2, frac=0.80) -> List[Image.Image]:
         crops.append(img.crop((x0, y0, x0 + cw, y0 + ch)))
     return crops
 
-# ------------------------ Remote calls (HF Inference API) ------------------------
-def remote_trocr(img: Image.Image) -> str:
+# ------------------------ Remote calls with surfaced errors ------------------------
+def remote_trocr(img: Image.Image) -> Tuple[str, str | None]:
     try:
         out = hf.image_to_text(image=_to_png_bytes(img), model=TROCR_MODEL, timeout=60)
         if isinstance(out, list) and out:
             out = out[0].get("generated_text", "")
-        return (out or "").strip()
-    except Exception:
-        return ""
+        return (out or "").strip(), None
+    except Exception as e:
+        return "", f"TROCR error: {e}"
 
-def remote_vqa(img: Image.Image, question: str) -> str:
+def remote_vqa(img: Image.Image, question: str) -> Tuple[str, str | None]:
     try:
         out = hf.visual_question_answering(
             image=_to_png_bytes(img),
@@ -93,19 +96,20 @@ def remote_vqa(img: Image.Image, question: str) -> str:
             timeout=60,
         )
         if isinstance(out, list) and out:
-            return (out[0].get("answer") or "").strip()
-        return (out or "").strip()
-    except Exception:
-        return ""
+            ans = (out[0].get("answer") or "").strip()
+            return ans, None
+        return (out or "").strip(), None
+    except Exception as e:
+        return "", f"VQA error: {e}"
 
-def remote_caption(img: Image.Image) -> str:
+def remote_caption(img: Image.Image) -> Tuple[str, str | None]:
     try:
         out = hf.image_to_text(image=_to_png_bytes(img), model=CAP_MODEL, timeout=60)
         if isinstance(out, list) and out:
             out = out[0].get("generated_text", "")
-        return (out or "").strip()
-    except Exception:
-        return ""
+        return (out or "").strip(), None
+    except Exception as e:
+        return "", f"Caption error: {e}"
 
 # ------------------------ Catalog normalizer (extend anytime) ------------------------
 BRANDS: Dict[str, str] = {
@@ -116,7 +120,7 @@ BRANDS: Dict[str, str] = {
     "Barilla": r"\bbarilla\b",
     "Campbell": r"\bcampbell'?s?\b",
     "Unilever": r"\bunilever\b",
-    # add more food-bank brands here…
+    # Add food-bank brands as you encounter them…
 }
 
 TYPES: Dict[str, str] = {
@@ -129,7 +133,7 @@ TYPES: Dict[str, str] = {
     "Beans": r"\bbeans?\b",
     "Pasta Sauce": r"\b(pasta|tomato)\s*sauce\b",
     "Toothpaste": r"\btoothpaste\b",
-    # add the types you want auto-normalized…
+    # Extend freely…
 }
 
 BAD    = r"nutrition facts|ingredients?|net wt|barcode|best by|serving size|calories"
@@ -149,34 +153,38 @@ def _match(table: Dict[str, str], text: str) -> str | None:
 # ------------------------ Suggestion pipeline ------------------------
 def suggest_item_name(img: Image.Image, economy: bool = True) -> Dict[str, Any]:
     """
-    Returns:
-      {
-        name, ocr_text, vqa_brand, vqa_type, caption,
-        latency_s, calls: {ocr, vqa, cap}
-      }
-    economy=True keeps calls low for free tier (2 OCR crops + 2 VQA + 1 caption).
+    Returns dict with:
+      name, ocr_text, vqa_brand, vqa_type, caption, errors[], latency_s, calls{ocr,vqa,cap}
     """
     t0 = time.time()
+    err_list: List[str] = []
+
     img = autoprocess(img)
 
-    # OCR (few center crops)
+    # OCR over a couple of crops
     crops = center_crops(img, n=2 if economy else 4, frac=0.8)
-    ocr_texts = [remote_trocr(autoprocess(c)) for c in crops]
-    ocr = clean(" ".join([t for t in ocr_texts if t]))
+    ocr_texts = []
+    for c in crops:
+        txt, e = remote_trocr(autoprocess(c))
+        if e: err_list.append(e)
+        if txt: ocr_texts.append(txt)
+    ocr = clean(" ".join(ocr_texts))
 
-    # VQA (short, anchored questions)
-    vqa_brand = remote_vqa(img, "What brand name is printed on the product label? One or two words.")
-    vqa_type  = remote_vqa(img, "What kind of product is this? (e.g., Cereal, Pasta, Soup, Antiperspirant Spray)")
+    # VQA
+    vqa_brand, e1 = remote_vqa(img, "What brand name is printed on the product label? One or two words only.")
+    if e1: err_list.append(e1)
+    vqa_type, e2  = remote_vqa(img, "What kind of product is this? Use a short noun phrase (e.g., Cereal, Pasta, Soup, Antiperspirant Spray).")
+    if e2: err_list.append(e2)
 
     # Caption fallback
-    cap = remote_caption(img)
+    cap, e3 = remote_caption(img)
+    if e3: err_list.append(e3)
 
-    # Fuse signals then normalize to catalog
+    # Normalize
     fused = " ".join(filter(None, [ocr, vqa_brand, vqa_type, cap]))
     brand = _match(BRANDS, fused)
     ptype = _match(TYPES, fused)
     var_m = re.search(VARIANT, fused, flags=re.I)
-
     parts = [brand, ptype, var_m.group(0).upper() if var_m else None]
     name = " ".join([p for p in parts if p]).strip() or (vqa_brand or ocr or cap or "Unknown").title()
 
@@ -186,19 +194,17 @@ def suggest_item_name(img: Image.Image, economy: bool = True) -> Dict[str, Any]:
         "vqa_brand": vqa_brand,
         "vqa_type": vqa_type,
         "caption": cap,
+        "errors": err_list,
         "latency_s": round(time.time() - t0, 2),
         "calls": {"ocr": len(crops), "vqa": 2, "cap": 1},
     }
 
-# ------------------------ Volunteer auth (simple) ------------------------
+# ------------------------ Volunteer auth ------------------------
 st.subheader("👤 Volunteer")
-
 with st.form("vol_form", clear_on_submit=True):
     username = st.text_input("Username")
     full_name = st.text_input("Full name")
-    submitted = st.form_submit_button("Add / Continue")
-
-    if submitted:
+    if st.form_submit_button("Add / Continue"):
         if not (username and full_name):
             st.error("Please fill both fields.")
         else:
@@ -215,14 +221,13 @@ if "volunteer" not in st.session_state:
 
 # ------------------------ Scan / Upload & Suggest ------------------------
 st.subheader("📸 Scan label to auto-fill item")
-
 c1, c2 = st.columns(2)
 with c1:
     cam = st.camera_input("Use your camera (works on phones)")
 with c2:
     up = st.file_uploader("…or upload a photo", type=["png", "jpg", "jpeg"])
 
-economy = st.toggle("Economy mode (fewer API calls)", value=True, help="Helps stay in free tier comfortably.")
+economy = st.toggle("Economy mode (fewer API calls)", value=True)
 
 suggested_name = st.session_state.get("suggested_name", "")
 img_file = cam or up
@@ -236,28 +241,28 @@ if img_file:
             res = suggest_item_name(img, economy=economy)
         st.success(f"🧠 Suggested: **{res['name']}**  ·  ⏱ {res['latency_s']}s")
         with st.expander("Debug (OCR / VQA / Caption)"):
-            st.write(res)
-
+            st.json(res)
         suggested_name = res["name"]
         st.session_state["suggested_name"] = suggested_name
 
-# ------------------------ Log item ------------------------
-st.subheader("📥 Add inventory item")
-
-item_name = st.text_input("Item name", value=suggested_name)
+# ------------------------ Log item (visit_items) ------------------------
+st.subheader("📥 Add inventory item (this visit)")
+item_name = st.text_input("Item name", value=suggested_name or "")
 quantity  = st.number_input("Quantity", min_value=1, step=1, value=1)
 category  = st.text_input("Category (optional)")
-expiry    = st.date_input("Expiry date (optional)")
+unit      = st.text_input("Unit (optional, e.g., 'can', 'box', 'spray')")
 
 if st.button("✅ Log item"):
     if item_name.strip():
         try:
-            sb.table("inventory").insert({
+            sb.table("visit_items").insert({
+                "volunteer": st.session_state.get("volunteer", "unknown"),
+                "barcode": None,
                 "item_name": item_name.strip(),
-                "quantity": int(quantity),
                 "category": category.strip() or None,
-                "expiry_date": str(expiry) if expiry else None,
-                "added_by": st.session_state.get("volunteer", "unknown"),
+                "unit": unit.strip() or None,
+                "qty": int(quantity),
+                # "timestamp": database default (now())
             }).execute()
             st.success("Logged!")
             st.session_state.pop("suggested_name", None)
@@ -266,17 +271,18 @@ if st.button("✅ Log item"):
     else:
         st.warning("Enter an item name.")
 
-# ------------------------ Live inventory ------------------------
-st.subheader("📊 Live inventory")
+# ------------------------ Live table (visit_items) ------------------------
+st.subheader("📊 Live inventory (recent visit items)")
 try:
-    data = sb.table("inventory").select("*").order("created_at", desc=True).execute().data
+    # Your schema shows column 'timestamp' on visit_items
+    data = sb.table("visit_items").select("*").order("timestamp", desc=True).limit(200).execute().data
     if data:
         df = pd.DataFrame(data)
         st.dataframe(df, use_container_width=True)
         st.download_button(
             "⬇️ Export CSV",
             df.to_csv(index=False).encode("utf-8"),
-            "care_count_inventory.csv",
+            "care_count_visit_items.csv",
             "text/csv",
         )
     else:
