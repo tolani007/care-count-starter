@@ -1,4 +1,4 @@
-# --- Care Count Inventory (VQA-only suggestion, free HF API) ---
+# --- Care Count Inventory (VQA-only; free HF Inference API; Supabase logging) ---
 
 import os
 os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue on Spaces
@@ -7,6 +7,7 @@ os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 import io
 import time
 import base64
+import json
 import requests
 import pandas as pd
 import streamlit as st
@@ -16,11 +17,11 @@ from supabase import create_client, Client
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
-st.caption("BLIP-VQA–assisted inventory logging with Supabase (free HF Inference API)")
+st.caption("VQA-assisted inventory logging with Supabase (free Hugging Face Inference API)")
 
 # ------------------------ Secrets & clients ------------------------
 def get_secret(name: str, default: str | None = None) -> str | None:
-    # Reads from env first (HF Variables), then from st.secrets (HF Secrets)
+    # Reads from env (Variables) first, then from st.secrets (Secrets)
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("SUPABASE_URL")
@@ -31,106 +32,127 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---- VQA model config (free serverless endpoint) ----
-HF_TOKEN = get_secret("HF_TOKEN")  # “Read” token is fine
-VQA_MODEL = os.getenv("VQA_MODEL", "Salesforce/blip-vqa-capfilt-large")  # better than base; still free
+# ---- Inference API config (free, serverless) ----
+HF_TOKEN = get_secret("HF_TOKEN", "")  # optional but recommended; a free read token is enough
 
-# ------------------------ Tiny image util ------------------------
+# You can set VQA_MODELS Variable (CSV) in Settings → Variables.
+# We automatically try each model in order until one answers.
+_env_models = os.getenv("VQA_MODELS", "").strip()
+VQA_MODELS = (
+    [m.strip() for m in _env_models.split(",") if m.strip()]
+    or [
+        "Salesforce/blip-vqa-capfilt-large",  # best quality (sometimes cold)
+        "Salesforce/blip-vqa-base",           # lighter fallback
+        "dandelin/vilt-b32-finetuned-vqa",    # different family fallback
+    ]
+)
+
+# ------------------------ Image utils ------------------------
 def _to_png_bytes(img: Image.Image) -> bytes:
     b = io.BytesIO()
     img.save(b, format="PNG")
     return b.getvalue()
 
+def _to_b64(img: Image.Image) -> str:
+    return base64.b64encode(_to_png_bytes(img)).decode("utf-8")
+
 # ------------------------ HTTP VQA helper ------------------------
-def vqa_http(img: Image.Image, question: str) -> tuple[str, str | None]:
+def vqa_http(img: Image.Image, question: str) -> tuple[str, str | None, str | None]:
     """
-    Calls HF Inference API for 'image-question-answering' (BLIP-VQA).
-    No huggingface_hub client; pure requests to avoid kwarg/version issues.
-    Returns (answer, error).
+    Try each model in VQA_MODELS. Returns (answer, error, model_used).
+    Uses the generic /models/{id} Inference API with base64 image payload.
     """
-    try:
-        img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-        url = f"https://api-inference.huggingface.co/models/{VQA_MODEL}"
-        headers = {"Accept": "application/json"}
-        if HF_TOKEN:
-            headers["Authorization"] = f"Bearer {HF_TOKEN}"
-        payload = {"inputs": {"question": question, "image": img_b64}}
+    img_b64 = _to_b64(img)
+    headers = {"Accept": "application/json"}
+    if HF_TOKEN:
+        headers["Authorization"] = f"Bearer {HF_TOKEN}"
 
-        r = requests.post(url, headers=headers, json=payload, timeout=60)
-        if r.status_code != 200:
-            return "", f"VQA HTTP {r.status_code}: {r.text[:200]}"
+    payload = {"inputs": {"question": question, "image": img_b64}}
 
-        out = r.json()
-        # API sometimes returns list[dict] or dict
-        if isinstance(out, list) and out:
-            ans = out[0].get("answer") or out[0].get("generated_text") or ""
-        elif isinstance(out, dict):
-            ans = out.get("answer") or out.get("generated_text") or ""
+    for model_id in VQA_MODELS:
+        url = f"https://api-inference.huggingface.co/models/{model_id}"
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=60)
+        except Exception as e:
+            # network/timeout – keep trying next model
+            last_err = f"{model_id} error: {e}"
+            continue
+
+        if r.status_code == 200:
+            out = r.json()
+            # API can return list[dict] or dict
+            if isinstance(out, list) and out:
+                ans = out[0].get("answer") or out[0].get("generated_text") or ""
+            elif isinstance(out, dict):
+                ans = out.get("answer") or out.get("generated_text") or ""
+            else:
+                ans = ""
+            ans = (ans or "").strip()
+            if ans:
+                return ans, None, model_id
+            last_err = f"{model_id} empty answer"
+        elif r.status_code in (503, 504):
+            # Model cold/not ready -> try next
+            last_err = f"{model_id} cold/not ready ({r.status_code})"
+        elif r.status_code == 404:
+            last_err = f"{model_id} not found (404)"
         else:
-            ans = ""
-        return (ans or "").strip(), None
-    except Exception as e:
-        return "", f"VQA HTTP error: {e}"
+            # Other API error; capture short body
+            last_err = f"{model_id} HTTP {r.status_code}: {r.text[:160]}"
+
+    return "", last_err, None
 
 # ------------------------ Normalizer ------------------------
 BRAND_ALIASES = {
-    "degree": "Degree",
-    "campbell's": "Campbell's",
-    "heinz": "Heinz",
-    "kellogg's": "Kellogg's",
-    "quaker": "Quaker",
-    "pepsi": "Pepsi",
-    "coke": "Coca-Cola",
+    "degree": "Degree", "campbell's": "Campbell's", "heinz": "Heinz",
+    "kellogg's": "Kellogg's", "quaker": "Quaker", "pepsi": "Pepsi", "coke": "Coca-Cola",
 }
 
 TYPE_ALIASES = {
-    "antiperspirant": "Antiperspirant",
-    "deodorant": "Deodorant",
-    "toothpaste": "Toothpaste",
-    "tooth brush": "Toothbrush",
-    "cereal": "Cereal",
-    "soup": "Soup",
-    "beans": "Beans",
-    "rice": "Rice",
-    "pasta": "Pasta",
-    "sauce": "Sauce",
-    "soda": "Soda",
+    "antiperspirant": "Antiperspirant", "deodorant": "Deodorant",
+    "toothpaste": "Toothpaste", "tooth brush": "Toothbrush",
+    "cereal": "Cereal", "soup": "Soup", "beans": "Beans",
+    "rice": "Rice", "pasta": "Pasta", "sauce": "Sauce", "soda": "Soda",
 }
 
-def _clean_name(s: str) -> str:
+def _clean(s: str) -> str:
     return (s or "").strip().lower()
 
 def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
-    b = BRAND_ALIASES.get(_clean_name(brand), brand.strip())
-    t = TYPE_ALIASES.get(_clean_name(ptype), ptype.strip())
-    parts = [p for p in [b, t] if p]
-    if parts:
-        return " ".join(parts)
+    b = BRAND_ALIASES.get(_clean(brand), (brand or "").strip())
+    t = TYPE_ALIASES.get(_clean(ptype), (ptype or "").strip())
+    name = " ".join([p for p in [b, t] if p])
+    if name:
+        return name
     if fallback_text:
+        # take a few words to avoid overly long labels
         return " ".join(fallback_text.strip().split()[:5])
     return "Unknown"
 
 # ------------------------ VQA-only suggestion pipeline ------------------------
 def suggest_name_vqa_only(img: Image.Image) -> dict:
     """
-    Ask two concise VQA questions + one fallback, then normalize.
+    Ask a few concise VQA questions. Combine & normalize.
     """
-    errors = []
-    q_brand = "What is the brand name on the product label? Answer with one or two words."
-    q_type  = "What type of product is this? Answer briefly, like 'Soup', 'Pasta', 'Antiperspirant'."
-    q_name  = "What is the product name or flavor written on the label? Answer with a few words."
+    errors, used_models = [], {}
 
-    brand, e1 = vqa_http(img, q_brand);  errors += [e1] if e1 else []
-    ptype, e2 = vqa_http(img, q_type);   errors += [e2] if e2 else []
-    pname, e3 = vqa_http(img, q_name);   errors += [e3] if e3 else []
+    q_brand = "What is the brand printed on the product label? Answer with one or two words."
+    q_type  = "What type of product is this? Answer briefly like 'Soup', 'Pasta', 'Antiperspirant'."
+    q_name  = "What is the exact product name or flavor written on the label? Answer a few words."
+
+    brand, e1, m1 = vqa_http(img, q_brand);  (errors.append(e1) if e1 else None); (used_models.setdefault("brand", m1))
+    ptype, e2, m2 = vqa_http(img, q_type);   (errors.append(e2) if e2 else None); (used_models.setdefault("type", m2))
+    pname, e3, m3 = vqa_http(img, q_name);   (errors.append(e3) if e3 else None); (used_models.setdefault("pname", m3))
 
     name = normalize_item(brand, ptype, pname)
+
     return {
-        "name": name if name else "Unknown",
+        "name": name or "Unknown",
         "vqa_brand": brand,
-        "vqa_type": ptype,
+        "vqa_type":  ptype,
         "vqa_pname": pname,
-        "errors": errors,
+        "models": used_models,
+        "errors": [e for e in errors if e],
     }
 
 # ------------------------ Volunteer login ------------------------
@@ -164,7 +186,7 @@ st.subheader("📸 Scan label to auto-fill item")
 
 c1, c2 = st.columns(2)
 with c1:
-    cam = st.camera_input("Use your webcam")
+    cam = st.camera_input("Use your phone or webcam")
 with c2:
     up = st.file_uploader("…or upload an image", type=["png", "jpg", "jpeg"])
 
@@ -176,24 +198,25 @@ if img_file:
     if st.button("🔍 Suggest name"):
         t0 = time.time()
         result = suggest_name_vqa_only(img)
-        st.success(f"🧠 Suggested: **{result['name']}** · ⏱️ {time.time()-t0:.2f}s")
+        t1 = time.time() - t0
+        st.success(f"🧠 Suggested: **{result['name']}** · ⏱️ {t1:.2f}s")
         with st.expander("🔎 Debug (VQA)"):
             st.json(result)
         st.session_state["scanned_item_name"] = result["name"]
 
-# ------------------------ Add inventory item (form unchanged) ------------------------
+# ------------------------ Add inventory item ------------------------
 st.subheader("📥 Add inventory item")
 
 item_name = st.text_input("Item name", value=st.session_state.get("scanned_item_name", ""))
-quantity = st.number_input("Quantity", min_value=1, step=1, value=1)
-category = st.text_input("Category (optional)")
-expiry = st.date_input("Expiry date (optional)")
+quantity  = st.number_input("Quantity", min_value=1, step=1, value=1)
+category  = st.text_input("Category (optional)")
+expiry    = st.date_input("Expiry date (optional)")
 
 if st.button("✅ Log item"):
     if not item_name.strip():
         st.warning("Enter an item name.")
     else:
-        # Try 'inventory' table first; if missing, fall back to 'visit_items'
+        # Prefer a simple 'inventory' table if you created it; otherwise fall back to your existing 'visit_items'
         try:
             sb.table("inventory").insert({
                 "item_name": item_name.strip(),
@@ -204,8 +227,8 @@ if st.button("✅ Log item"):
             }).execute()
             st.success("Logged to 'inventory'!")
         except Exception as e1:
-            # Fallback: visit_items (id, visit_id, timestamp, volunteer, weather_type, temp_c, barcode, item_name, category, unit, qty)
             try:
+                # visit_items schema from your screenshot: (id, visit_id, timestamp, volunteer, weather_type, temp_c, barcode, item_name, category, unit, qty)
                 payload_vi = {
                     "item_name": item_name.strip(),
                     "qty": int(quantity),
@@ -215,26 +238,24 @@ if st.button("✅ Log item"):
                 sb.table("visit_items").insert(payload_vi).execute()
                 st.success("Logged to 'visit_items'!")
             except Exception as e2:
-                st.error(f"Insert failed: {e1}\nFallback failed: {e2}")
+                st.error(f"Insert failed.\nPrimary: {e1}\nFallback: {e2}")
 
 # ------------------------ Live inventory (tries multiple tables) ------------------------
 st.subheader("📊 Live inventory")
 
 def _try_fetch(table: str):
     try:
-        return sb.table(table).select("*").order("created_at", desc=True).execute().data
+        return sb.table(table).select("*").order("created_ts", desc=True).execute().data
     except Exception:
         try:
-            # some tables don’t have created_at
-            return sb.table(table).select("*").limit(1000).execute().data
+            return sb.table(table).select("*").order("created_at", desc=True).execute().data
         except Exception:
-            return None
+            try:
+                return sb.table(table).select("*").limit(500).execute().data
+            except Exception:
+                return None
 
-data = _try_fetch("inventory")
-if not data:
-    data = _try_fetch("visit_items")
-if not data:
-    data = _try_fetch("inventory_master")
+data = _try_fetch("inventory") or _try_fetch("visit_items") or _try_fetch("inventory_master")
 
 if data:
     df = pd.DataFrame(data)
@@ -246,4 +267,4 @@ if data:
         "text/csv",
     )
 else:
-    st.caption("No items yet or tables not found. (Tried: inventory, visit_items, inventory_master)")
+    st.caption("No rows yet or tables not found. Tried: inventory, visit_items, inventory_master.")
