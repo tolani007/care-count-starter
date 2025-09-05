@@ -45,6 +45,32 @@ OCR_MODELS = [
     os.getenv("OCR_MODEL") or "microsoft/trocr-large-printed",
     "microsoft/trocr-base-printed",
 ]
+
+# ------------------------ VQA model selection & fallbacks ------------------------
+def _norm_repo_id(rid: str | None) -> str:
+    """strip quotes/spaces so env/variables like `"Salesforce/... "` don't 404"""
+    return (rid or "").strip().strip('"').strip("'")
+
+# Preferred model: you can override in Space → Settings → Variables → VQA_MODEL
+VQA_MODEL = _norm_repo_id(
+    os.getenv("VQA_MODEL") or st.secrets.get("VQA_MODEL") or "Salesforce/blip-vqa-capfilt-large"
+)
+
+# Try preferred first, then safe fallbacks (dedup while preserving order)
+FALLBACK_MODELS = list(dict.fromkeys([
+    VQA_MODEL,
+    "Salesforce/blip-vqa-base",
+    # keeping VILT as a *last* resort; sometimes returns 404, which we already handle
+    "dandelin/vilt-b32-finetuned-vqa",
+]))
+
+# If somehow empty, guarantee at least one entry
+if not FALLBACK_MODELS or not FALLBACK_MODELS[0]:
+    FALLBACK_MODELS = ["Salesforce/blip-vqa-capfilt-large"]
+
+# Normalize again in case any had quotes
+FALLBACK_MODELS = [_norm_repo_id(m) for m in FALLBACK_MODELS]
+
 # ------------------------ Tiny image utils ------------------------
 def _to_png_bytes(img: Image.Image) -> bytes:
     b = io.BytesIO()
