@@ -12,7 +12,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, ImageOps, ImageEnhance
 from supabase import create_client, Client
-
+import json
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
@@ -33,19 +33,72 @@ sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---- VQA model config (free serverless endpoint) ----
 HF_TOKEN = get_secret("HF_TOKEN")  # optional but helps cold-starts
-PRIMARY_MODEL = os.getenv("VQA_MODEL", "Salesforce/blip-vqa-capfilt-large")
-FALLBACK_MODELS = [
-    PRIMARY_MODEL,                         # 1) what you set in Space → Variables
-    "Salesforce/blip-vqa-capfilt-large",   # 2) strong default
-    "Salesforce/blip-vqa-base",            # 3) smaller fallback
+# Try these in order (first item can be overridden from Variables → VQA_MODEL)
+VQA_MODELS = [
+    os.getenv("VQA_MODEL") or "Salesforce/blip-vqa-capfilt-large",
+    "Salesforce/blip-vqa-base",
+    "dandelin/vilt-b32-finetuned-vqa",
 ]
 
+# OCR fallback (optional variable OCR_MODEL can override the first)
+OCR_MODELS = [
+    os.getenv("OCR_MODEL") or "microsoft/trocr-large-printed",
+    "microsoft/trocr-base-printed",
+]
 # ------------------------ Tiny image utils ------------------------
 def _to_png_bytes(img: Image.Image) -> bytes:
     b = io.BytesIO()
     img.save(b, format="PNG")
     return b.getvalue()
 
+
+def _hf_post_form(model_id: str, files: dict, data: dict | None = None):
+    """Low-level multipart POST to HF Inference API."""
+    url = f"https://api-inference.huggingface.co/models/{model_id}"
+    headers = {"Accept": "application/json"}
+    if HF_TOKEN:
+        headers["Authorization"] = f"Bearer {HF_TOKEN}"
+    return requests.post(url, headers=headers, files=files, data=(data or {}), timeout=60)
+
+def vqa_http(img: Image.Image, question: str) -> tuple[str, str | None, list[str]]:
+    """
+    Try the configured VQA models in order (free endpoints).
+    Returns (answer, model_used, errors[]).
+    """
+    img_bytes = _to_png_bytes(img)
+    errors: list[str] = []
+
+    for mid in VQA_MODELS:
+        try:
+            files = {"image": ("image.png", img_bytes, "image/png")}
+            data = {"inputs": json.dumps({"question": question})}
+            r = _hf_post_form(mid, files=files, data=data)
+
+            # Common API statuses
+            if r.status_code in (503, 524):
+                errors.append(f"{mid.split('/')[-1]} loading ({r.status_code})")
+                time.sleep(1.0)
+                continue
+            if r.status_code == 404:
+                errors.append(f"{mid.split('/')[-1]} not found (404)")
+                continue
+            if r.status_code != 200:
+                errors.append(f"{mid.split('/')[-1]} HTTP {r.status_code}: {r.text[:160]}")
+                continue
+
+            out = r.json()
+            # BLIP/VILT style responses
+            ans = ""
+            if isinstance(out, list) and out:
+                ans = out[0].get("answer") or out[0].get("generated_text") or ""
+            elif isinstance(out, dict):
+                ans = out.get("answer") or out.get("generated_text") or ""
+            if ans:
+                return ans.strip(), mid, errors
+        except Exception as e:
+            errors.append(f"{mid.split('/')[-1]} error: {e}")
+
+    return "", None, errors
 def preprocess_for_label(img: Image.Image) -> Image.Image:
     """Lighten/contrast + gentle resize for mobile, improves label legibility."""
     img = img.convert("RGB")
