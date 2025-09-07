@@ -1,4 +1,4 @@
-# --- Care Count Inventory (VQA-only suggestion, free HF API) ---
+# --- Care Count Inventory (OCR-only suggestion via Hugging Face Inference API) ---
 
 import os
 os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue on Spaces
@@ -6,22 +6,27 @@ os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 
 import io
 import time
-import json
 import base64
+import json
 import requests
 import pandas as pd
 import streamlit as st
 from PIL import Image, ImageOps, ImageEnhance
 from supabase import create_client, Client
 
+try:
+    from huggingface_hub import InferenceClient
+except Exception:
+    InferenceClient = None  # we'll fall back to raw HTTP
+
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
-st.caption("BLIP-VQA–assisted inventory logging with Supabase (free Hugging Face Inference API)")
+st.caption("OCR-assisted inventory logging with Supabase (Hugging Face Inference API)")
 
 # ------------------------ Secrets & clients ------------------------
 def get_secret(name: str, default: str | None = None) -> str | None:
-    # Reads from env/Variables first, then from st.secrets (Secrets)
+    # Reads from env/variables first, then from st.secrets
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("SUPABASE_URL")
@@ -32,177 +37,155 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ================================================================
-#                 UNIVERSAL HF VISION (VQA ONLY)
-# ================================================================
-def _clean(s: str | None) -> str:
-    return (s or "").strip().strip('"').strip("'")
+HF_TOKEN = get_secret("HF_TOKEN")  # optional but recommended for reliability/rate limits
+OCR_MODEL = (os.getenv("OCR_MODEL") or st.secrets.get("OCR_MODEL")
+             or "microsoft/trocr-large-printed").strip().strip('"').strip("'")
 
-def _qualify_repo(repo: str | None) -> str:
-    """If a model id is provided without owner, add the most likely owner."""
-    rid = _clean(repo)
-    if not rid:
-        return rid
-    if '/' in rid:
-        return rid
-    # guess common owners
-    if rid.startswith("blip-vqa"):
-        return f"Salesforce/{rid}"
-    if rid.startswith("blip-image"):
-        return f"Salesforce/{rid}"
-    if rid.startswith("trocr"):
-        return f"microsoft/{rid}"
-    if rid.startswith("vit-") or rid.startswith("deit-"):
-        return f"google/{rid}"
-    return rid
-
-HF_TOKEN = get_secret("HF_TOKEN")  # HF access token (read scope recommended)
-
-# Preferred model from Variables/Secrets; else defaults.
-VQA_MODELS = [
-    _qualify_repo(get_secret("VQA_MODEL")) or "Salesforce/blip-vqa-capfilt-large",
-    "Salesforce/blip-vqa-base",
-    "dandelin/vilt-b32-finetuned-vqa",
-]
-# Dedup while preserving order
-_seen = set()
-VQA_MODELS = [m for m in VQA_MODELS if m and not (m in _seen or _seen.add(m))]
+# ------------------------ Image utilities ------------------------
+def _to_png_bytes(img: Image.Image) -> bytes:
+    b = io.BytesIO()
+    img.save(b, format="PNG")
+    return b.getvalue()
 
 def preprocess_for_label(img: Image.Image) -> Image.Image:
     """Lighten/contrast + gentle resize for mobile, improves label legibility."""
     img = img.convert("RGB")
+    # Resize longest side to ~1024px (helps OCR without huge payloads)
     w, h = img.size
-    scale = 768 / max(w, h) if max(w, h) > 768 else 1.0
+    scale = 1024 / max(w, h) if max(w, h) > 1024 else 1.0
     if scale < 1.0:
         img = img.resize((int(w * scale), int(h * scale)))
     img = ImageOps.autocontrast(img, cutoff=2)
     img = ImageEnhance.Brightness(img).enhance(1.12)
     img = ImageEnhance.Contrast(img).enhance(1.08)
-    return img
+    sharp = ImageEnhance.Sharpness(img).enhance(1.2)
+    return sharp
 
-def _hf_vqa_call(model_id: str, img: Image.Image, question: str) -> tuple[str, str | None]:
+# ------------------------ OCR helpers ------------------------
+@st.cache_resource(show_spinner=False)
+def _hf_client():
+    if InferenceClient is None:
+        return None
+    try:
+        return InferenceClient(token=HF_TOKEN)
+    except Exception:
+        return None
+
+def _ocr_via_client(img: Image.Image) -> tuple[str, str | None]:
     """
-    Call HF Inference API for image-question-answering with base64 JSON.
-    Returns (answer, error).
+    Preferred path: huggingface_hub.InferenceClient.image_to_text
+    Returns (text, error)
+    """
+    client = _hf_client()
+    if client is None:
+        return "", "HF client unavailable"
+    try:
+        text = client.image_to_text(image=_to_png_bytes(img), model=OCR_MODEL)
+        if isinstance(text, dict):
+            # Some backends return {"generated_text": "..."}
+            text = text.get("generated_text", "")
+        return (text or "").strip(), None
+    except Exception as e:
+        return "", f"client error: {e}"
+
+def _ocr_via_http(img: Image.Image) -> tuple[str, str | None]:
+    """
+    Fallback: raw HTTP to Inference API.
+    TrOCR (image-to-text) accepts base64 in JSON for Inference API.
     """
     try:
-        b = io.BytesIO()
-        img.save(b, format="PNG")
-        img_b64 = base64.b64encode(b.getvalue()).decode("utf-8")
-
-        url = f"https://api-inference.huggingface.co/models/{model_id}"
+        url = f"https://api-inference.huggingface.co/models/{OCR_MODEL}"
         headers = {"Accept": "application/json"}
         if HF_TOKEN:
             headers["Authorization"] = f"Bearer {HF_TOKEN}"
 
-        payload = {"inputs": {"question": question, "image": img_b64}}
-        r = requests.post(url, headers=headers, json=payload, timeout=60)
+        img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
+        payload = {"inputs": img_b64}
 
-        if r.status_code in (503, 524):  # model loading / gateway timeout
-            return "", f"{model_id} loading ({r.status_code})"
+        r = requests.post(url, headers=headers, json=payload, timeout=60)
+        if r.status_code in (503, 524):
+            return "", f"model loading ({r.status_code})"
         if r.status_code == 404:
-            return "", f"{model_id} not found (404)"
+            return "", "model not found (404)"
         if r.status_code != 200:
-            return "", f"{model_id} HTTP {r.status_code}: {r.text[:200]}"
+            return "", f"HTTP {r.status_code}: {r.text[:200]}"
 
         out = r.json()
-        ans = ""
-        if isinstance(out, list) and out:
-            ans = out[0].get("answer") or out[0].get("generated_text") or ""
-        elif isinstance(out, dict):
-            ans = out.get("answer") or out.get("generated_text") or ""
-        return (ans or "").strip(), None
+        # TrOCR usually returns {"generated_text": "..."} or plain string
+        if isinstance(out, dict):
+            text = out.get("generated_text", "")
+        elif isinstance(out, list) and out and isinstance(out[0], dict):
+            text = out[0].get("generated_text", "")
+        else:
+            text = out if isinstance(out, str) else ""
+        return (text or "").strip(), None
     except Exception as e:
-        return "", f"{model_id} error: {e}"
+        return "", f"http error: {e}"
 
-def ask_vqa(img: Image.Image, question: str) -> tuple[str, str | None, list[str]]:
+def run_ocr(img: Image.Image) -> dict:
     """
-    Try each model id until one returns a non-empty answer.
-    Returns (answer, model_used, errors[]).
+    Single OCR pass + simple normalization => an item name.
     """
-    errors: list[str] = []
-    for mid in VQA_MODELS:
-        ans, err = _hf_vqa_call(mid, img, question)
-        if err:
-            errors.append(err)
-            if "loading" in err:
-                time.sleep(1.0)
-            continue
-        if ans:
-            return ans, mid, errors
-    return "", None, errors
+    errors = []
+    pre = preprocess_for_label(img)
 
-# ------------------------ Normalizer ------------------------
-BRAND_ALIASES = {
-    "degree": "Degree",
-    "campbell's": "Campbell's",
-    "heinz": "Heinz",
-    "kellogg's": "Kellogg's",
-    "quaker": "Quaker",
-    "pepsi": "Pepsi",
-    "coke": "Coca-Cola",
-    "vaseline": "Vaseline",
-    "compliments": "Compliments",
-}
+    text, err = _ocr_via_client(pre)
+    if err or not text:
+        errors.append(err or "empty")
+        text, err2 = _ocr_via_http(pre)
+        if err2:
+            errors.append(err2)
 
-TYPE_ALIASES = {
-    "antiperspirant": "Antiperspirant",
-    "deodorant": "Deodorant",
-    "toothpaste": "Toothpaste",
-    "tooth brush": "Toothbrush",
-    "cereal": "Cereal",
-    "soup": "Soup",
-    "beans": "Beans",
-    "rice": "Rice",
-    "pasta": "Pasta",
-    "sauce": "Sauce",
-    "soda": "Soda",
-    "lotion": "Lotion",
-    "body lotion": "Body lotion",
-    "hand sanitizer": "Hand sanitizer",
-    "mayonnaise": "Mayonnaise",
-    "condiment": "Condiment",
-}
-
-def _clean_name(s: str) -> str:
-    return (s or "").strip().lower()
-
-def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
-    b = BRAND_ALIASES.get(_clean_name(brand), (brand or "").strip())
-    t = TYPE_ALIASES.get(_clean_name(ptype), (ptype or "").strip())
-    parts = [p for p in [b, t] if p]
-    if parts:
-        return " ".join(parts)
-    if fallback_text:
-        return " ".join(fallback_text.strip().split()[:5])
-    return "Unknown"
-
-# ------------------------ VQA-only suggestion pipeline ------------------------
-def suggest_name_vqa_only(img_original: Image.Image) -> dict:
-    img = preprocess_for_label(img_original)
-
-    q_brand = "What is the brand name on the product label? Answer with one or two words."
-    q_type  = "What type of product is this? Answer briefly, like 'Soup', 'Pasta', 'Antiperspirant', 'Lotion', 'Mayonnaise'."
-    q_name  = "What is the product name or variant on the label? Answer in a few words."
-
-    brand, model_b, err_b = ask_vqa(img, q_brand)
-    ptype, model_t, err_t  = ask_vqa(img, q_type)
-    pname, model_n, err_n  = ask_vqa(img, q_name)
-
-    name = normalize_item(brand, ptype, pname)
-
+    name = normalize_from_text(text)
     return {
         "name": name if name else "Unknown",
-        "vqa_brand": brand,
-        "vqa_type": ptype,
-        "vqa_pname": pname,
-        "models": {"brand": model_b, "type": model_t, "pname": model_n},
-        "errors": [*err_b, *err_t, *err_n],
+        "ocr_text": text,
+        "model": OCR_MODEL,
+        "errors": [e for e in errors if e],
     }
 
-# ================================================================
-#                          APP UI
-# ================================================================
+# ------------------------ Normalizer (simple) ------------------------
+# Extend anytime with categories you care about
+TYPE_WORDS = [
+    "soup", "beans", "rice", "pasta", "sauce", "salsa", "cereal", "oats",
+    "toothpaste", "toothbrush", "soap", "shampoo", "conditioner",
+    "lotion", "body lotion", "mayonnaise", "ketchup", "mustard",
+    "peanut butter", "jam", "jelly", "soda", "juice", "tea", "coffee",
+    "tuna", "chicken", "beef", "noodles", "flour", "sugar", "salt",
+    "deodorant", "antiperspirant", "detergent", "sanitizer", "oil"
+]
+
+def normalize_from_text(text: str) -> str:
+    """
+    Very lightweight: try to pull a 'brand' (first capitalized word)
+    and a 'type' (any known type in the text). Fallback to the first 4-5 words.
+    """
+    t = (text or "").strip()
+    if not t:
+        return ""
+
+    # candidate brand: first word that looks like Title Case or ALLCAPS
+    tokens = [w.strip(",.:;!|/\\-()[]{}") for w in t.split()]
+    brand = ""
+    for w in tokens[:8]:  # look near the front
+        if len(w) >= 2 and (w.isupper() or (w[0].isupper() and w[1:].islower())):
+            brand = w
+            break
+
+    # candidate type: first match from TYPE_WORDS
+    low = t.lower()
+    found_type = ""
+    for k in TYPE_WORDS:
+        if k in low:
+            found_type = k
+            break
+
+    parts = [p for p in [brand, found_type] if p]
+    if parts:
+        return " ".join(parts).strip()
+
+    # Fallback: compress to a few words
+    return " ".join(tokens[:5]).strip()
 
 # ------------------------ Volunteer login ------------------------
 st.subheader("👤 Volunteer")
@@ -244,20 +227,11 @@ if img_file:
     img = Image.open(img_file).convert("RGB")
     st.image(img, use_container_width=True)
 
-    # Show current vision config + quick connectivity check
-    with st.expander("⚙️ Vision config / API status", expanded=False):
-        st.write({"VQA_MODELS": VQA_MODELS})
-        try:
-            ping = requests.get("https://api-inference.huggingface.co/status", timeout=10)
-            st.caption(f"HF API status: {ping.status_code}")
-        except Exception as e:
-            st.warning(f"Network check failed: {e}")
-
     if st.button("🔍 Suggest name"):
         t0 = time.time()
-        result = suggest_name_vqa_only(img)
+        result = run_ocr(img)
         st.success(f"🧠 Suggested: **{result['name']}** · ⏱️ {time.time()-t0:.2f}s")
-        with st.expander("🔎 Debug (VQA)"):
+        with st.expander("🔎 Debug (OCR)"):
             st.json(result)
         st.session_state["scanned_item_name"] = result["name"]
 
@@ -304,7 +278,7 @@ st.subheader("📊 Live inventory")
 
 def _try_fetch(table: str):
     try:
-        # some tables use created_ts, others created_at; try both, else limit
+        # try common timestamp fields first
         return sb.table(table).select("*").order("created_ts", desc=True).execute().data
     except Exception:
         try:
