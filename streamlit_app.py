@@ -33,16 +33,17 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ===================== Universal HF Vision integration (drop-in) =====================
-HF_TOKEN = get_secret("HF_TOKEN")  # optional but helps avoid cold-start throttling
+# ===================== Universal HF Vision integration (fixed I/O) =====================
+# Token: accept either HF_TOKEN or HUGGINGFACEHUB_API_TOKEN
+HF_TOKEN = get_secret("HF_TOKEN") or get_secret("HUGGINGFACEHUB_API_TOKEN")
 
-# Defaults for common tasks; can be overridden via Space → Settings → Variables
+# Defaults (override in Settings → Variables if you want)
 VQA_MODEL     = os.getenv("VQA_MODEL",     "Salesforce/blip-vqa-capfilt-large")
 OCR_MODEL     = os.getenv("OCR_MODEL",     "microsoft/trocr-large-printed")
 CAPTION_MODEL = os.getenv("CAPTION_MODEL", "Salesforce/blip-image-captioning-base")
 LABELS_MODEL  = os.getenv("LABELS_MODEL",  "microsoft/resnet-50")
 
-# Suggestion chain order; override with SUGGESTION_CHAIN env/variable (e.g., "vqa>ocr>labels")
+# Suggestion order (override with SUGGESTION_CHAIN env var, e.g. "vqa>ocr>labels")
 SUGGESTION_CHAIN = [
     m.strip() for m in os.getenv("SUGGESTION_CHAIN", "vqa>ocr>caption>labels").split(">")
     if m.strip()
@@ -54,137 +55,120 @@ def _to_png_bytes(img: Image.Image) -> bytes:
     return b.getvalue()
 
 def _hf_url(model_id: str) -> str:
-    model_id = model_id.strip().strip('"').strip("'")
+    model_id = (model_id or "").strip().strip('"').strip("'")
     return f"https://api-inference.huggingface.co/models/{model_id}"
 
-def _headers() -> Dict[str, str]:
-    h = {"Accept": "application/json"}
-    if HF_TOKEN:
-        h["Authorization"] = f"Bearer {HF_TOKEN}"
+def _headers_json() -> dict:
+    h = {"Accept": "application/json", "Content-Type": "application/json"}
+    if HF_TOKEN: h["Authorization"] = f"Bearer {HF_TOKEN}"
     return h
 
-def _post_json(model_id: str, payload: Dict[str, Any]) -> Tuple[Optional[Any], Optional[str]]:
+def _headers_binary() -> dict:
+    # For tasks that expect raw image bytes (classification)
+    h = {"Accept": "application/json", "Content-Type": "image/png"}
+    if HF_TOKEN: h["Authorization"] = f"Bearer {HF_TOKEN}"
+    return h
+
+def _post_json(model_id: str, payload: dict) -> tuple[dict | list | None, str | None]:
     try:
-        r = requests.post(_hf_url(model_id), headers=_headers(), json=payload, timeout=60)
-        if r.status_code in (503, 524):
-            return None, f"loading ({r.status_code})"
-        if r.status_code == 404:
-            return None, "not found (404)"
-        if r.status_code != 200:
-            return None, f"HTTP {r.status_code}: {r.text[:180]}"
+        r = requests.post(_hf_url(model_id), headers=_headers_json(),
+                          data=json.dumps(payload), timeout=60)
+        if r.status_code in (503, 524): return None, f"loading ({r.status_code})"
+        if r.status_code == 404:         return None, "not found (404)"
+        if r.status_code != 200:         return None, f"HTTP {r.status_code}: {r.text[:180]}"
         return r.json(), None
     except Exception as e:
         return None, f"error: {e}"
 
-def _post_multipart(model_id: str, files: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Tuple[Optional[Any], Optional[str]]:
+def _post_binary(model_id: str, img_bytes: bytes) -> tuple[list | dict | None, str | None]:
     try:
-        r = requests.post(_hf_url(model_id), headers=_headers(), files=files, data=(data or {}), timeout=60)
-        if r.status_code in (503, 524):
-            return None, f"loading ({r.status_code})"
-        if r.status_code == 404:
-            return None, "not found (404)"
-        if r.status_code != 200:
-            return None, f"HTTP {r.status_code}: {r.text[:180]}"
+        r = requests.post(_hf_url(model_id), headers=_headers_binary(),
+                          data=img_bytes, timeout=60)
+        if r.status_code in (503, 524): return None, f"loading ({r.status_code})"
+        if r.status_code == 404:         return None, "not found (404)"
+        if r.status_code != 200:         return None, f"HTTP {r.status_code}: {r.text[:180]}"
         return r.json(), None
     except Exception as e:
         return None, f"error: {e}"
 
 # ----- Task wrappers -----
-def call_vqa(img: Image.Image, question: str, models: List[str] | None = None) -> Tuple[str, Optional[str], List[str]]:
+def call_vqa(img: Image.Image, question: str,
+             models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
     """
-    Visual Question Answering (e.g., BLIP-VQA).
-    Returns (answer, model_used, errors[]).
+    VQA: send JSON {inputs: {image: <b64>, question: "..."}}
     """
     models = models or [VQA_MODEL, "Salesforce/blip-vqa-base", "dandelin/vilt-b32-finetuned-vqa"]
-    img_bytes = _to_png_bytes(img)
-    errs: List[str] = []
+    img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
+    errs: list[str] = []
     for mid in models:
-        files = {"image": ("image.png", img_bytes, "image/png")}
-        data = {"inputs": json.dumps({"question": question})}  # multipart with inputs JSON-string
-        out, err = _post_multipart(mid, files=files, data=data)
+        out, err = _post_json(mid, {"inputs": {"question": question, "image": img_b64}})
         if err:
             errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err:
-                time.sleep(1.0)
+            if "loading" in err: time.sleep(1.0)
             continue
         ans = ""
-        if isinstance(out, list) and out:
-            ans = out[0].get("answer") or out[0].get("generated_text") or ""
-        elif isinstance(out, dict):
-            ans = out.get("answer") or out.get("generated_text") or ""
-        if ans:
-            return ans.strip(), mid, errs
+        if isinstance(out, list) and out: ans = out[0].get("answer") or out[0].get("generated_text") or ""
+        elif isinstance(out, dict):       ans = out.get("answer") or out.get("generated_text") or ""
+        if ans: return ans.strip(), mid, errs
     return "", None, errs
 
-def call_ocr(img: Image.Image, models: List[str] | None = None) -> Tuple[str, Optional[str], List[str]]:
+def call_ocr(img: Image.Image, models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
     """
-    OCR via TrOCR (image-to-text).
-    Returns (text, model_used, errors[]).
+    OCR: TrOCR (image-to-text) expects JSON with base64 image
     """
     models = models or [OCR_MODEL, "microsoft/trocr-base-printed"]
     img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-    errs: List[str] = []
+    errs: list[str] = []
     for mid in models:
         out, err = _post_json(mid, {"inputs": img_b64})
         if err:
             errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err:
-                time.sleep(1.0)
+            if "loading" in err: time.sleep(1.0)
             continue
         txt = ""
-        if isinstance(out, list) and out:
-            txt = out[0].get("generated_text") or ""
-        elif isinstance(out, dict):
-            txt = out.get("generated_text") or ""
-        if txt:
-            return txt.strip(), mid, errs
+        if isinstance(out, list) and out: txt = out[0].get("generated_text") or ""
+        elif isinstance(out, dict):       txt = out.get("generated_text") or ""
+        if txt: return txt.strip(), mid, errs
     return "", None, errs
 
-def call_caption(img: Image.Image, models: List[str] | None = None) -> Tuple[str, Optional[str], List[str]]:
+def call_caption(img: Image.Image, models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
     """
-    Captioning via BLIP image-captioning.
-    Returns (caption, model_used, errors[]).
+    Caption: BLIP image captioning expects JSON with base64 image
     """
     models = models or [CAPTION_MODEL, "Salesforce/blip-image-captioning-large"]
     img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-    errs: List[str] = []
+    errs: list[str] = []
     for mid in models:
         out, err = _post_json(mid, {"inputs": img_b64})
         if err:
             errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err:
-                time.sleep(1.0)
+            if "loading" in err: time.sleep(1.0)
             continue
         cap = ""
-        if isinstance(out, list) and out:
-            cap = out[0].get("generated_text") or ""
-        elif isinstance(out, dict):
-            cap = out.get("generated_text") or ""
-        if cap:
-            return cap.strip(), mid, errs
+        if isinstance(out, list) and out: cap = out[0].get("generated_text") or ""
+        elif isinstance(out, dict):       cap = out.get("generated_text") or ""
+        if cap: return cap.strip(), mid, errs
     return "", None, errs
 
-def call_labels(img: Image.Image, models: List[str] | None = None) -> Tuple[List[Dict[str, Any]], Optional[str], List[str]]:
+def call_labels(img: Image.Image, models: list[str] | None = None) -> tuple[list[dict], str | None, list[str]]:
     """
-    Image classification (returns list of {label, score}).
-    Good for general tags if everything else fails.
+    Classification: expects RAW BYTES (not multipart). We send image/png bytes.
+    Returns list of {label, score}.
     """
     models = models or [LABELS_MODEL]
     img_bytes = _to_png_bytes(img)
-    errs: List[str] = []
+    errs: list[str] = []
     for mid in models:
-        files = {"image": ("image.png", img_bytes, "image/png")}
-        out, err = _post_multipart(mid, files=files)
+        out, err = _post_binary(mid, img_bytes)
         if err:
             errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err:
-                time.sleep(1.0)
+            if "loading" in err: time.sleep(1.0)
             continue
         if isinstance(out, list) and out and isinstance(out[0], dict) and "label" in out[0]:
             return out, mid, errs
     return [], None, errs
 
-# ----- Normalizers -----
+# ----- Normalizers (unchanged) -----
 BRAND_ALIASES = {
     "degree": "Degree", "dove": "Dove", "vaseline": "Vaseline",
     "campbell's": "Campbell's", "heinz": "Heinz", "kellogg's": "Kellogg's",
@@ -212,13 +196,12 @@ def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
         return " ".join(fallback_text.strip().split()[:5])
     return "Unknown"
 
-# ----- Suggestion pipeline (configurable chain) -----
-def suggest_name_universal(img: Image.Image) -> Dict[str, Any]:
+def suggest_name_universal(img: Image.Image) -> dict:
     """
     Runs SUGGESTION_CHAIN in order. Returns dict with name + debug.
     Chain tokens: 'vqa', 'ocr', 'caption', 'labels'
     """
-    debug: Dict[str, Any] = {"path": None, "steps": [], "errors": []}
+    debug: dict = {"path": None, "steps": [], "errors": []}
     brand = ptype = pname = ""
     name = "Unknown"
 
@@ -233,8 +216,7 @@ def suggest_name_universal(img: Image.Image) -> Dict[str, Any]:
             brand, ptype, pname = b or brand, t or ptype, n or pname
             name = normalize_item(brand, ptype, pname)
             if name != "Unknown":
-                debug["path"] = "vqa"
-                return {"name": name, "brand": brand, "type": ptype, "raw": pname, "debug": debug}
+                debug["path"] = "vqa"; return {"name": name, "brand": brand, "type": ptype, "raw": pname, "debug": debug}
 
         elif step == "ocr":
             txt, m_o, e_o = call_ocr(img); debug["errors"] += e_o; debug["steps"].append({"step":"ocr","model":m_o,"text":txt})
@@ -243,16 +225,14 @@ def suggest_name_universal(img: Image.Image) -> Dict[str, Any]:
                 ptype = ptype or next((TYPE_ALIASES[k] for k in TYPE_ALIASES if k in _clean(txt)), "")
                 name = normalize_item(brand, ptype, txt)
                 if name != "Unknown":
-                    debug["path"] = "ocr"
-                    return {"name": name, "brand": brand, "type": ptype, "raw": txt, "debug": debug}
+                    debug["path"] = "ocr"; return {"name": name, "brand": brand, "type": ptype, "raw": txt, "debug": debug}
 
         elif step == "caption":
             cap, m_c, e_c = call_caption(img); debug["errors"] += e_c; debug["steps"].append({"step":"caption","model":m_c,"text":cap})
             if cap:
                 name = normalize_item(brand, ptype, cap)
                 if name != "Unknown":
-                    debug["path"] = "caption"
-                    return {"name": name, "brand": brand, "type": ptype, "raw": cap, "debug": debug}
+                    debug["path"] = "caption"; return {"name": name, "brand": brand, "type": ptype, "raw": cap, "debug": debug}
 
         elif step == "labels":
             labels, m_l, e_l = call_labels(img); debug["errors"] += e_l; debug["steps"].append({"step":"labels","model":m_l,"labels":labels[:5]})
@@ -260,11 +240,11 @@ def suggest_name_universal(img: Image.Image) -> Dict[str, Any]:
                 top = ", ".join([d.get("label","") for d in labels[:3] if d.get("label")])
                 name = normalize_item(brand, ptype, top)
                 if name != "Unknown":
-                    debug["path"] = "labels"
-                    return {"name": name, "brand": brand, "type": ptype, "raw": top, "debug": debug}
+                    debug["path"] = "labels"; return {"name": name, "brand": brand, "type": ptype, "raw": top, "debug": debug}
 
     return {"name": "Unknown", "brand": brand, "type": ptype, "raw": "", "debug": debug}
-# ================== end Universal HF Vision integration ==================
+# ================== end Universal HF Vision integration =====================
+
 
 # ------------------------ Image preprocessor (helps phone pics) ------------------------
 def preprocess_for_label(img: Image.Image) -> Image.Image:
