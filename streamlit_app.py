@@ -1,4 +1,4 @@
-# --- Care Count Inventory (Universal HF Vision: VQA→OCR→Caption→Labels) ---
+# --- Care Count Inventory (VQA-only suggestion, free HF API) ---
 
 import os
 os.environ.setdefault("HOME", "/tmp")  # avoid '/.streamlit' permission issue on Spaces
@@ -6,23 +6,22 @@ os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 
 import io
 import time
-import base64
 import json
+import base64
 import requests
 import pandas as pd
 import streamlit as st
-from typing import Any, Dict, List, Tuple, Optional
 from PIL import Image, ImageOps, ImageEnhance
 from supabase import create_client, Client
 
 # ------------------------ Page ------------------------
 st.set_page_config(page_title="Care Count Inventory", layout="centered")
 st.title("📦 Care Count Inventory")
-st.caption("Universal HF Vision (VQA with OCR/caption/labels fallback) + Supabase")
+st.caption("BLIP-VQA–assisted inventory logging with Supabase (free Hugging Face Inference API)")
 
-# ------------------------ Secrets & Supabase client ------------------------
+# ------------------------ Secrets & clients ------------------------
 def get_secret(name: str, default: str | None = None) -> str | None:
-    # Reads from env/variables first, then from st.secrets
+    # Reads from env/Variables first, then from st.secrets (Secrets)
     return os.getenv(name) or st.secrets.get(name, default)
 
 SUPABASE_URL = get_secret("SUPABASE_URL")
@@ -33,220 +32,42 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ===================== Universal HF Vision integration (fixed I/O) =====================
-# Token: accept either HF_TOKEN or HUGGINGFACEHUB_API_TOKEN
-HF_TOKEN = get_secret("HF_TOKEN") or get_secret("HUGGINGFACEHUB_API_TOKEN")
+# ================================================================
+#                 UNIVERSAL HF VISION (VQA ONLY)
+# ================================================================
+def _clean(s: str | None) -> str:
+    return (s or "").strip().strip('"').strip("'")
 
-# Defaults (override in Settings → Variables if you want)
-VQA_MODEL     = os.getenv("VQA_MODEL",     "Salesforce/blip-vqa-capfilt-large")
-OCR_MODEL     = os.getenv("OCR_MODEL",     "microsoft/trocr-large-printed")
-CAPTION_MODEL = os.getenv("CAPTION_MODEL", "Salesforce/blip-image-captioning-base")
-LABELS_MODEL  = os.getenv("LABELS_MODEL",  "microsoft/resnet-50")
+def _qualify_repo(repo: str | None) -> str:
+    """If a model id is provided without owner, add the most likely owner."""
+    rid = _clean(repo)
+    if not rid:
+        return rid
+    if '/' in rid:
+        return rid
+    # guess common owners
+    if rid.startswith("blip-vqa"):
+        return f"Salesforce/{rid}"
+    if rid.startswith("blip-image"):
+        return f"Salesforce/{rid}"
+    if rid.startswith("trocr"):
+        return f"microsoft/{rid}"
+    if rid.startswith("vit-") or rid.startswith("deit-"):
+        return f"google/{rid}"
+    return rid
 
-# Suggestion order (override with SUGGESTION_CHAIN env var, e.g. "vqa>ocr>labels")
-SUGGESTION_CHAIN = [
-    m.strip() for m in os.getenv("SUGGESTION_CHAIN", "vqa>ocr>caption>labels").split(">")
-    if m.strip()
+HF_TOKEN = get_secret("HF_TOKEN")  # HF access token (read scope recommended)
+
+# Preferred model from Variables/Secrets; else defaults.
+VQA_MODELS = [
+    _qualify_repo(get_secret("VQA_MODEL")) or "Salesforce/blip-vqa-capfilt-large",
+    "Salesforce/blip-vqa-base",
+    "dandelin/vilt-b32-finetuned-vqa",
 ]
+# Dedup while preserving order
+_seen = set()
+VQA_MODELS = [m for m in VQA_MODELS if m and not (m in _seen or _seen.add(m))]
 
-def _to_png_bytes(img: Image.Image) -> bytes:
-    b = io.BytesIO()
-    img.save(b, format="PNG")
-    return b.getvalue()
-
-def _hf_url(model_id: str) -> str:
-    model_id = (model_id or "").strip().strip('"').strip("'")
-    return f"https://api-inference.huggingface.co/models/{model_id}"
-
-def _headers_json() -> dict:
-    h = {"Accept": "application/json", "Content-Type": "application/json"}
-    if HF_TOKEN: h["Authorization"] = f"Bearer {HF_TOKEN}"
-    return h
-
-def _headers_binary() -> dict:
-    # For tasks that expect raw image bytes (classification)
-    h = {"Accept": "application/json", "Content-Type": "image/png"}
-    if HF_TOKEN: h["Authorization"] = f"Bearer {HF_TOKEN}"
-    return h
-
-def _post_json(model_id: str, payload: dict) -> tuple[dict | list | None, str | None]:
-    try:
-        r = requests.post(_hf_url(model_id), headers=_headers_json(),
-                          data=json.dumps(payload), timeout=60)
-        if r.status_code in (503, 524): return None, f"loading ({r.status_code})"
-        if r.status_code == 404:         return None, "not found (404)"
-        if r.status_code != 200:         return None, f"HTTP {r.status_code}: {r.text[:180]}"
-        return r.json(), None
-    except Exception as e:
-        return None, f"error: {e}"
-
-def _post_binary(model_id: str, img_bytes: bytes) -> tuple[list | dict | None, str | None]:
-    try:
-        r = requests.post(_hf_url(model_id), headers=_headers_binary(),
-                          data=img_bytes, timeout=60)
-        if r.status_code in (503, 524): return None, f"loading ({r.status_code})"
-        if r.status_code == 404:         return None, "not found (404)"
-        if r.status_code != 200:         return None, f"HTTP {r.status_code}: {r.text[:180]}"
-        return r.json(), None
-    except Exception as e:
-        return None, f"error: {e}"
-
-# ----- Task wrappers -----
-def call_vqa(img: Image.Image, question: str,
-             models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
-    """
-    VQA: send JSON {inputs: {image: <b64>, question: "..."}}
-    """
-    models = models or [VQA_MODEL, "Salesforce/blip-vqa-base", "dandelin/vilt-b32-finetuned-vqa"]
-    img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-    errs: list[str] = []
-    for mid in models:
-        out, err = _post_json(mid, {"inputs": {"question": question, "image": img_b64}})
-        if err:
-            errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err: time.sleep(1.0)
-            continue
-        ans = ""
-        if isinstance(out, list) and out: ans = out[0].get("answer") or out[0].get("generated_text") or ""
-        elif isinstance(out, dict):       ans = out.get("answer") or out.get("generated_text") or ""
-        if ans: return ans.strip(), mid, errs
-    return "", None, errs
-
-def call_ocr(img: Image.Image, models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
-    """
-    OCR: TrOCR (image-to-text) expects JSON with base64 image
-    """
-    models = models or [OCR_MODEL, "microsoft/trocr-base-printed"]
-    img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-    errs: list[str] = []
-    for mid in models:
-        out, err = _post_json(mid, {"inputs": img_b64})
-        if err:
-            errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err: time.sleep(1.0)
-            continue
-        txt = ""
-        if isinstance(out, list) and out: txt = out[0].get("generated_text") or ""
-        elif isinstance(out, dict):       txt = out.get("generated_text") or ""
-        if txt: return txt.strip(), mid, errs
-    return "", None, errs
-
-def call_caption(img: Image.Image, models: list[str] | None = None) -> tuple[str, str | None, list[str]]:
-    """
-    Caption: BLIP image captioning expects JSON with base64 image
-    """
-    models = models or [CAPTION_MODEL, "Salesforce/blip-image-captioning-large"]
-    img_b64 = base64.b64encode(_to_png_bytes(img)).decode("utf-8")
-    errs: list[str] = []
-    for mid in models:
-        out, err = _post_json(mid, {"inputs": img_b64})
-        if err:
-            errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err: time.sleep(1.0)
-            continue
-        cap = ""
-        if isinstance(out, list) and out: cap = out[0].get("generated_text") or ""
-        elif isinstance(out, dict):       cap = out.get("generated_text") or ""
-        if cap: return cap.strip(), mid, errs
-    return "", None, errs
-
-def call_labels(img: Image.Image, models: list[str] | None = None) -> tuple[list[dict], str | None, list[str]]:
-    """
-    Classification: expects RAW BYTES (not multipart). We send image/png bytes.
-    Returns list of {label, score}.
-    """
-    models = models or [LABELS_MODEL]
-    img_bytes = _to_png_bytes(img)
-    errs: list[str] = []
-    for mid in models:
-        out, err = _post_binary(mid, img_bytes)
-        if err:
-            errs.append(f"{mid.split('/')[-1]} {err}")
-            if "loading" in err: time.sleep(1.0)
-            continue
-        if isinstance(out, list) and out and isinstance(out[0], dict) and "label" in out[0]:
-            return out, mid, errs
-    return [], None, errs
-
-# ----- Normalizers (unchanged) -----
-BRAND_ALIASES = {
-    "degree": "Degree", "dove": "Dove", "vaseline": "Vaseline",
-    "campbell's": "Campbell's", "heinz": "Heinz", "kellogg's": "Kellogg's",
-    "quaker": "Quaker", "pepsi": "Pepsi", "coke": "Coca-Cola",
-}
-TYPE_ALIASES = {
-    "antiperspirant": "Antiperspirant", "deodorant": "Deodorant",
-    "toothpaste": "Toothpaste", "tooth brush": "Toothbrush",
-    "cereal": "Cereal", "soup": "Soup", "beans": "Beans",
-    "rice": "Rice", "pasta": "Pasta", "sauce": "Sauce", "soda": "Soda",
-    "lotion": "Lotion", "body lotion": "Body lotion", "hand sanitizer": "Hand sanitizer",
-    "shampoo": "Shampoo", "conditioner": "Conditioner",
-}
-
-def _clean(s: str) -> str:
-    return (s or "").strip().lower()
-
-def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
-    b = BRAND_ALIASES.get(_clean(brand), (brand or "").strip())
-    t = TYPE_ALIASES.get(_clean(ptype), (ptype or "").strip())
-    parts = [p for p in (b, t) if p]
-    if parts:
-        return " ".join(parts)
-    if fallback_text:
-        return " ".join(fallback_text.strip().split()[:5])
-    return "Unknown"
-
-def suggest_name_universal(img: Image.Image) -> dict:
-    """
-    Runs SUGGESTION_CHAIN in order. Returns dict with name + debug.
-    Chain tokens: 'vqa', 'ocr', 'caption', 'labels'
-    """
-    debug: dict = {"path": None, "steps": [], "errors": []}
-    brand = ptype = pname = ""
-    name = "Unknown"
-
-    for step in SUGGESTION_CHAIN:
-        if step == "vqa":
-            q_brand = "What is the brand name on the product label? Answer with one or two words."
-            q_type  = "What type of product is this? Answer briefly, like 'Soup', 'Pasta', 'Antiperspirant', 'Lotion'."
-            q_name  = "What is the product name or variant on the label? Answer in a few words."
-            b, m_b, e_b = call_vqa(img, q_brand); debug["errors"] += e_b; debug["steps"].append({"step":"vqa_brand","model":m_b,"answer":b})
-            t, m_t, e_t = call_vqa(img, q_type ); debug["errors"] += e_t; debug["steps"].append({"step":"vqa_type","model":m_t,"answer":t})
-            n, m_n, e_n = call_vqa(img, q_name ); debug["errors"] += e_n; debug["steps"].append({"step":"vqa_name","model":m_n,"answer":n})
-            brand, ptype, pname = b or brand, t or ptype, n or pname
-            name = normalize_item(brand, ptype, pname)
-            if name != "Unknown":
-                debug["path"] = "vqa"; return {"name": name, "brand": brand, "type": ptype, "raw": pname, "debug": debug}
-
-        elif step == "ocr":
-            txt, m_o, e_o = call_ocr(img); debug["errors"] += e_o; debug["steps"].append({"step":"ocr","model":m_o,"text":txt})
-            if txt:
-                brand = brand or next((BRAND_ALIASES[k] for k in BRAND_ALIASES if k in _clean(txt)), "")
-                ptype = ptype or next((TYPE_ALIASES[k] for k in TYPE_ALIASES if k in _clean(txt)), "")
-                name = normalize_item(brand, ptype, txt)
-                if name != "Unknown":
-                    debug["path"] = "ocr"; return {"name": name, "brand": brand, "type": ptype, "raw": txt, "debug": debug}
-
-        elif step == "caption":
-            cap, m_c, e_c = call_caption(img); debug["errors"] += e_c; debug["steps"].append({"step":"caption","model":m_c,"text":cap})
-            if cap:
-                name = normalize_item(brand, ptype, cap)
-                if name != "Unknown":
-                    debug["path"] = "caption"; return {"name": name, "brand": brand, "type": ptype, "raw": cap, "debug": debug}
-
-        elif step == "labels":
-            labels, m_l, e_l = call_labels(img); debug["errors"] += e_l; debug["steps"].append({"step":"labels","model":m_l,"labels":labels[:5]})
-            if labels:
-                top = ", ".join([d.get("label","") for d in labels[:3] if d.get("label")])
-                name = normalize_item(brand, ptype, top)
-                if name != "Unknown":
-                    debug["path"] = "labels"; return {"name": name, "brand": brand, "type": ptype, "raw": top, "debug": debug}
-
-    return {"name": "Unknown", "brand": brand, "type": ptype, "raw": "", "debug": debug}
-# ================== end Universal HF Vision integration =====================
-
-
-# ------------------------ Image preprocessor (helps phone pics) ------------------------
 def preprocess_for_label(img: Image.Image) -> Image.Image:
     """Lighten/contrast + gentle resize for mobile, improves label legibility."""
     img = img.convert("RGB")
@@ -255,9 +76,133 @@ def preprocess_for_label(img: Image.Image) -> Image.Image:
     if scale < 1.0:
         img = img.resize((int(w * scale), int(h * scale)))
     img = ImageOps.autocontrast(img, cutoff=2)
-    img = ImageEnhance.Brightness(img).enhance(1.15)
-    img = ImageEnhance.Contrast(img).enhance(1.1)
+    img = ImageEnhance.Brightness(img).enhance(1.12)
+    img = ImageEnhance.Contrast(img).enhance(1.08)
     return img
+
+def _hf_vqa_call(model_id: str, img: Image.Image, question: str) -> tuple[str, str | None]:
+    """
+    Call HF Inference API for image-question-answering with base64 JSON.
+    Returns (answer, error).
+    """
+    try:
+        b = io.BytesIO()
+        img.save(b, format="PNG")
+        img_b64 = base64.b64encode(b.getvalue()).decode("utf-8")
+
+        url = f"https://api-inference.huggingface.co/models/{model_id}"
+        headers = {"Accept": "application/json"}
+        if HF_TOKEN:
+            headers["Authorization"] = f"Bearer {HF_TOKEN}"
+
+        payload = {"inputs": {"question": question, "image": img_b64}}
+        r = requests.post(url, headers=headers, json=payload, timeout=60)
+
+        if r.status_code in (503, 524):  # model loading / gateway timeout
+            return "", f"{model_id} loading ({r.status_code})"
+        if r.status_code == 404:
+            return "", f"{model_id} not found (404)"
+        if r.status_code != 200:
+            return "", f"{model_id} HTTP {r.status_code}: {r.text[:200]}"
+
+        out = r.json()
+        ans = ""
+        if isinstance(out, list) and out:
+            ans = out[0].get("answer") or out[0].get("generated_text") or ""
+        elif isinstance(out, dict):
+            ans = out.get("answer") or out.get("generated_text") or ""
+        return (ans or "").strip(), None
+    except Exception as e:
+        return "", f"{model_id} error: {e}"
+
+def ask_vqa(img: Image.Image, question: str) -> tuple[str, str | None, list[str]]:
+    """
+    Try each model id until one returns a non-empty answer.
+    Returns (answer, model_used, errors[]).
+    """
+    errors: list[str] = []
+    for mid in VQA_MODELS:
+        ans, err = _hf_vqa_call(mid, img, question)
+        if err:
+            errors.append(err)
+            if "loading" in err:
+                time.sleep(1.0)
+            continue
+        if ans:
+            return ans, mid, errors
+    return "", None, errors
+
+# ------------------------ Normalizer ------------------------
+BRAND_ALIASES = {
+    "degree": "Degree",
+    "campbell's": "Campbell's",
+    "heinz": "Heinz",
+    "kellogg's": "Kellogg's",
+    "quaker": "Quaker",
+    "pepsi": "Pepsi",
+    "coke": "Coca-Cola",
+    "vaseline": "Vaseline",
+    "compliments": "Compliments",
+}
+
+TYPE_ALIASES = {
+    "antiperspirant": "Antiperspirant",
+    "deodorant": "Deodorant",
+    "toothpaste": "Toothpaste",
+    "tooth brush": "Toothbrush",
+    "cereal": "Cereal",
+    "soup": "Soup",
+    "beans": "Beans",
+    "rice": "Rice",
+    "pasta": "Pasta",
+    "sauce": "Sauce",
+    "soda": "Soda",
+    "lotion": "Lotion",
+    "body lotion": "Body lotion",
+    "hand sanitizer": "Hand sanitizer",
+    "mayonnaise": "Mayonnaise",
+    "condiment": "Condiment",
+}
+
+def _clean_name(s: str) -> str:
+    return (s or "").strip().lower()
+
+def normalize_item(brand: str, ptype: str, fallback_text: str = "") -> str:
+    b = BRAND_ALIASES.get(_clean_name(brand), (brand or "").strip())
+    t = TYPE_ALIASES.get(_clean_name(ptype), (ptype or "").strip())
+    parts = [p for p in [b, t] if p]
+    if parts:
+        return " ".join(parts)
+    if fallback_text:
+        return " ".join(fallback_text.strip().split()[:5])
+    return "Unknown"
+
+# ------------------------ VQA-only suggestion pipeline ------------------------
+def suggest_name_vqa_only(img_original: Image.Image) -> dict:
+    img = preprocess_for_label(img_original)
+
+    q_brand = "What is the brand name on the product label? Answer with one or two words."
+    q_type  = "What type of product is this? Answer briefly, like 'Soup', 'Pasta', 'Antiperspirant', 'Lotion', 'Mayonnaise'."
+    q_name  = "What is the product name or variant on the label? Answer in a few words."
+
+    brand, model_b, err_b = ask_vqa(img, q_brand)
+    ptype, model_t, err_t  = ask_vqa(img, q_type)
+    pname, model_n, err_n  = ask_vqa(img, q_name)
+
+    name = normalize_item(brand, ptype, pname)
+
+    return {
+        "name": name if name else "Unknown",
+        "vqa_brand": brand,
+        "vqa_type": ptype,
+        "vqa_pname": pname,
+        "models": {"brand": model_b, "type": model_t, "pname": model_n},
+        "errors": [*err_b, *err_t, *err_n],
+    }
+
+# ================================================================
+#                          APP UI
+# ================================================================
 
 # ------------------------ Volunteer login ------------------------
 st.subheader("👤 Volunteer")
@@ -296,16 +241,24 @@ with c2:
 
 img_file = cam or up
 if img_file:
-    img_raw = Image.open(img_file).convert("RGB")
-    st.image(img_raw, use_container_width=True)
+    img = Image.open(img_file).convert("RGB")
+    st.image(img, use_container_width=True)
+
+    # Show current vision config + quick connectivity check
+    with st.expander("⚙️ Vision config / API status", expanded=False):
+        st.write({"VQA_MODELS": VQA_MODELS})
+        try:
+            ping = requests.get("https://api-inference.huggingface.co/status", timeout=10)
+            st.caption(f"HF API status: {ping.status_code}")
+        except Exception as e:
+            st.warning(f"Network check failed: {e}")
 
     if st.button("🔍 Suggest name"):
         t0 = time.time()
-        img = preprocess_for_label(img_raw)
-        result = suggest_name_universal(img)
+        result = suggest_name_vqa_only(img)
         st.success(f"🧠 Suggested: **{result['name']}** · ⏱️ {time.time()-t0:.2f}s")
-        with st.expander("🔎 Debug (VQA/OCR/Caption/Labels)"):
-            st.json(result.get("debug", {}))
+        with st.expander("🔎 Debug (VQA)"):
+            st.json(result)
         st.session_state["scanned_item_name"] = result["name"]
 
 # ------------------------ Add inventory item ------------------------
@@ -351,6 +304,7 @@ st.subheader("📊 Live inventory")
 
 def _try_fetch(table: str):
     try:
+        # some tables use created_ts, others created_at; try both, else limit
         return sb.table(table).select("*").order("created_ts", desc=True).execute().data
     except Exception:
         try:
@@ -361,7 +315,11 @@ def _try_fetch(table: str):
             except Exception:
                 return None
 
-data = _try_fetch("inventory") or _try_fetch("visit_items") or _try_fetch("inventory_master")
+data = _try_fetch("inventory")
+if not data:
+    data = _try_fetch("visit_items")
+if not data:
+    data = _try_fetch("inventory_master")
 
 if data:
     df = pd.DataFrame(data)
