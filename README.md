@@ -9,7 +9,7 @@ license: mit
 sdk_version: 1.48.1
 ---
 ## Live Demo
-- Vercel: care-count-app-demo.vercel.app  (redirects to the live app)
+- Vercel: (https://care-count-app-demo.vercel.app/)  (redirects to the live app)
 - Status: MVP demo for a small group. If access is blocked, DM me your HF username and I’ll add you.
 
 ## Cloud Collaboration (no local setup)
