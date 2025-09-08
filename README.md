@@ -75,4 +75,49 @@ Right now the UI and database parts are ready, but the brain (image → item nam
 ## Next steps
 - Fix model access so the app can call Hugging Face models properly.  
 - Build fallback logic: OCR first, then vision model if no text is found.  
-- Push working code so volunteers can test with real food items.  
+- Push working code so volunteers can test with real food items.
+
+
+## How to collaborate (no local setup needed)
+
+If you want to help me move this project forward, you don’t need to install anything on your laptop.  
+The repo is already set up so you can work **directly in the cloud**. Here are the easiest paths:  
+
+### 1. GitHub Codespaces (recommended)
+- Click the green **Code** button at the top of this repo.  
+- Select **Open with Codespaces → New codespace**.  
+- This will open a full VS Code dev environment in your browser.  
+- Everything you need (Python, Streamlit, git) is preinstalled.  
+- From there you can run:
+  ```bash
+  streamlit run streamlit_app.py
+2. Hugging Face Spaces
+
+This repo is linked to a Hugging Face Space (the live app host).
+
+You can sync changes to Hugging Face by pushing to main.
+
+Hugging Face will automatically rebuild and redeploy the app.
+
+To test your edits:
+
+Make a branch
+
+Open a pull request
+
+Once merged into main, the Hugging Face Space redeploys with your update.
+
+3. Streamlit Cloud (optional)
+
+Another option is to connect this repo to Streamlit Cloud.
+
+Anyone with access can deploy changes instantly to a shared app link.
+
+Future Contributors:
+No need to install Python locally unless you want to.
+
+Best path: open a Codespace → edit → push changes → see them live on Hugging Face.
+
+If you add new packages, also update requirements.txt so Hugging Face/Streamlit can rebuild properly.
+
+If you try new model integrations (OCR or vision), please write in the README what you tried so we don’t repeat the same dead ends.
