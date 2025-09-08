@@ -8,6 +8,14 @@ pinned: false
 license: mit
 sdk_version: 1.48.1
 ---
+## Live Demo
+- Vercel: care-count-app-demo.vercel.app  (redirects to the live app)
+- Status: MVP demo for a small group. If access is blocked, DM me your HF username and I’ll add you.
+
+## Cloud Collaboration (no local setup)
+- Click **Code → Open with Codespaces → New codespace** to edit in-browser.
+- Make a branch, open a PR. On merge to `main`, Vercel redeploys automatically (redirect stays the same).
+- If you change the app host URL, update `vercel.json` accordingly.
 
 Care Count — BLIP-assisted inventory logging with Supabase (Streamlit).
 
