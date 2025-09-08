@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://huggingface.co/spaces/focustikicare-count",
+      "destination": "https://huggingface.co/spaces/focustiki/care-count",
       "permanent": false
     }
   ]
