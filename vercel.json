@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://huggingface.co/spaces/<owner>/<space-name>",
+      "permanent": false
+    }
+  ]
+}
