@@ -8,6 +8,27 @@ pinned: false
 license: mit
 sdk_version: 1.48.1
 ---
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/tolani007/care-count-starter)
+
+## 🔑 Secrets Setup
+- Copy `.env.example` to `.env`
+- Fill in:
+  - `SUPABASE_URL` (from Supabase project → Settings → API)
+  - `SUPABASE_KEY` (Anon key, not service role for safety)
+  - `HF_TOKEN` (create in Hugging Face → Settings → Access Tokens)
+
+⚠️ Never commit `.env` — it’s in `.gitignore`.
+Use Hugging Face Space or Streamlit Cloud settings to add these secrets when deploying.
+
+Demo app (Vercel redirect):
+👉 https://care-count-app-demo.vercel.app
+
+Code repo:
+👉 https://github.com/tolani007/care-count-starter
+
+Issues board (for blockers):
+👉 https://github.com/tolani007/care-count-starter/issues
+
 ## Live Demo
 - Vercel: (https://care-count-app-demo.vercel.app/)  (redirects to the live app)
 - Status: MVP demo for a small group. If access is blocked, DM me your HF username and I’ll add you.
