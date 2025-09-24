@@ -1,0 +1,117 @@
+2025-09-23 20:25:54,990 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:25:55,112 - INFO - Backup created: pre_test_backup_20250923_202554
+2025-09-23 20:25:55,254 - INFO - ✅ App is running and accessible
+2025-09-23 20:25:55,272 - INFO - ❌ title_present: False
+2025-09-23 20:25:55,273 - INFO - ❌ signin_form: False
+2025-09-23 20:25:55,274 - INFO - ❌ camera_input: False
+2025-09-23 20:25:55,275 - INFO - ✅ file_upload: True
+2025-09-23 20:25:55,275 - INFO - ❌ visit_management: False
+2025-09-23 20:25:55,275 - INFO - ❌ item_logging: False
+2025-09-23 20:25:55,275 - INFO - ✅ css_styling: True
+2025-09-23 20:25:55,298 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:25:55,313 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:25:55,314 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:25:55,329 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:26:13,186 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:26:13,215 - INFO - Backup created: pre_test_backup_20250923_202613
+2025-09-23 20:26:13,246 - INFO - ✅ App is running and accessible
+2025-09-23 20:26:13,264 - INFO - ❌ title_present: False
+2025-09-23 20:26:13,264 - INFO - ❌ signin_form: False
+2025-09-23 20:26:13,264 - INFO - ❌ camera_input: False
+2025-09-23 20:26:13,264 - INFO - ✅ file_upload: True
+2025-09-23 20:26:13,265 - INFO - ❌ visit_management: False
+2025-09-23 20:26:13,265 - INFO - ❌ item_logging: False
+2025-09-23 20:26:13,268 - INFO - ✅ css_styling: True
+2025-09-23 20:26:13,338 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:26:13,369 - INFO - ⚡ Load time: 0.03s
+2025-09-23 20:26:13,372 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:26:13,374 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:26:27,992 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:26:28,030 - INFO - Backup created: pre_test_backup_20250923_202627
+2025-09-23 20:26:28,058 - INFO - ✅ App is running and accessible
+2025-09-23 20:26:28,068 - INFO - ❌ title_present: False
+2025-09-23 20:26:28,068 - INFO - ❌ signin_form: False
+2025-09-23 20:26:28,069 - INFO - ❌ camera_input: False
+2025-09-23 20:26:28,069 - INFO - ✅ file_upload: True
+2025-09-23 20:26:28,070 - INFO - ❌ visit_management: False
+2025-09-23 20:26:28,070 - INFO - ❌ item_logging: False
+2025-09-23 20:26:28,070 - INFO - ✅ css_styling: True
+2025-09-23 20:26:28,085 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:26:28,095 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:26:28,097 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:26:28,098 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:36:26,066 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:36:26,096 - INFO - Backup created: pre_test_backup_20250923_203626
+2025-09-23 20:36:26,122 - INFO - ✅ App is running and accessible
+2025-09-23 20:36:26,130 - INFO - ❌ title_present: False
+2025-09-23 20:36:26,130 - INFO - ❌ signin_form: False
+2025-09-23 20:36:26,131 - INFO - ❌ camera_input: False
+2025-09-23 20:36:26,131 - INFO - ✅ file_upload: True
+2025-09-23 20:36:26,131 - INFO - ❌ visit_management: False
+2025-09-23 20:36:26,131 - INFO - ❌ item_logging: False
+2025-09-23 20:36:26,132 - INFO - ✅ css_styling: True
+2025-09-23 20:36:26,140 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:36:26,147 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:36:26,148 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:36:26,149 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:38:34,298 - INFO - Backup created: hero_section_html_fix_20250923_203834
+2025-09-23 20:38:39,337 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:38:39,358 - INFO - Backup created: pre_test_backup_20250923_203839
+2025-09-23 20:38:39,375 - INFO - ✅ App is running and accessible
+2025-09-23 20:38:39,380 - INFO - ❌ title_present: False
+2025-09-23 20:38:39,380 - INFO - ❌ signin_form: False
+2025-09-23 20:38:39,381 - INFO - ❌ camera_input: False
+2025-09-23 20:38:39,381 - INFO - ✅ file_upload: True
+2025-09-23 20:38:39,382 - INFO - ❌ visit_management: False
+2025-09-23 20:38:39,382 - INFO - ❌ item_logging: False
+2025-09-23 20:38:39,382 - INFO - ✅ css_styling: True
+2025-09-23 20:38:39,387 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:38:39,392 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:38:39,392 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:38:39,393 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:39:37,609 - INFO - Backup created: indentation_fix_20250923_203937
+2025-09-23 20:39:41,150 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:39:41,181 - INFO - Backup created: pre_test_backup_20250923_203941
+2025-09-23 20:39:41,203 - INFO - ✅ App is running and accessible
+2025-09-23 20:39:41,209 - INFO - ❌ title_present: False
+2025-09-23 20:39:41,209 - INFO - ❌ signin_form: False
+2025-09-23 20:39:41,210 - INFO - ❌ camera_input: False
+2025-09-23 20:39:41,210 - INFO - ✅ file_upload: True
+2025-09-23 20:39:41,210 - INFO - ❌ visit_management: False
+2025-09-23 20:39:41,211 - INFO - ❌ item_logging: False
+2025-09-23 20:39:41,211 - INFO - ✅ css_styling: True
+2025-09-23 20:39:41,217 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:39:41,224 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:39:41,225 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:39:41,225 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:41:36,791 - INFO - Backup created: working_version_final_20250923_204136
+2025-09-23 20:52:08,350 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:52:08,384 - INFO - Backup created: pre_test_backup_20250923_205208
+2025-09-23 20:52:08,413 - INFO - ✅ App is running and accessible
+2025-09-23 20:52:08,421 - INFO - ❌ title_present: False
+2025-09-23 20:52:08,421 - INFO - ❌ signin_form: False
+2025-09-23 20:52:08,421 - INFO - ❌ camera_input: False
+2025-09-23 20:52:08,421 - INFO - ✅ file_upload: True
+2025-09-23 20:52:08,421 - INFO - ❌ visit_management: False
+2025-09-23 20:52:08,422 - INFO - ❌ item_logging: False
+2025-09-23 20:52:08,422 - INFO - ✅ css_styling: True
+2025-09-23 20:52:08,432 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:52:08,450 - INFO - ⚡ Load time: 0.02s
+2025-09-23 20:52:08,450 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:52:08,450 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 20:52:22,085 - INFO - 🧪 Starting comprehensive app testing...
+2025-09-23 20:52:22,127 - INFO - Backup created: pre_test_backup_20250923_205222
+2025-09-23 20:52:22,152 - INFO - ✅ App is running and accessible
+2025-09-23 20:52:22,159 - INFO - ❌ title_present: False
+2025-09-23 20:52:22,159 - INFO - ❌ signin_form: False
+2025-09-23 20:52:22,159 - INFO - ❌ camera_input: False
+2025-09-23 20:52:22,159 - INFO - ✅ file_upload: True
+2025-09-23 20:52:22,160 - INFO - ❌ visit_management: False
+2025-09-23 20:52:22,160 - INFO - ❌ item_logging: False
+2025-09-23 20:52:22,160 - INFO - ✅ css_styling: True
+2025-09-23 20:52:22,167 - INFO - 📱 Responsive design score: 0.00 (❌)
+2025-09-23 20:52:22,174 - INFO - ⚡ Load time: 0.01s
+2025-09-23 20:52:22,174 - INFO - 📊 Content size: 1522 bytes
+2025-09-23 20:52:22,174 - INFO - 🎯 Overall test score: 0.43 (FAIL)
+2025-09-23 21:22:05,730 - ERROR - Backup working_version_final not found
+2025-09-23 21:53:26,689 - INFO - Restored from backup: working_version_final_20250923_204136

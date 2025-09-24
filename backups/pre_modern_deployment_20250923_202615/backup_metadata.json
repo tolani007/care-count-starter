@@ -1,0 +1,32 @@
+{
+  "backup_name": "pre_modern_deployment_20250923_202615",
+  "timestamp": "20250923_202615",
+  "description": "pre_modern_deployment",
+  "files_backed_up": [
+    "streamlit_app.py",
+    "streamlit_app_modern.py",
+    ".streamlit/secrets.toml",
+    "requirements.txt",
+    "ui_improvements.py",
+    "test_app.py"
+  ],
+  "git_status": {
+    "modified_files": [
+      "M requirements.txt",
+      " M streamlit_app.py",
+      "?? .streamlit/",
+      "?? .venv/",
+      "?? __pycache__/",
+      "?? backups/",
+      "?? care_count.log",
+      "?? deploy_modern.py",
+      "?? deployment.log",
+      "?? streamlit_app_backup_20250923_195853.py",
+      "?? streamlit_app_modern.py",
+      "?? test_app.py",
+      "?? test_results.log",
+      "?? ui_improvements.py"
+    ],
+    "return_code": 0
+  }
+}

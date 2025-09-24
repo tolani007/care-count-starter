@@ -1,0 +1,677 @@
+2025-09-23 20:26:28,425 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:26:28,429 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:26:28,799 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:26:28,800 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:26:28,800 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:26:28,800 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:26:28,800 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:26:28,800 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:29:28,636 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:29:28,643 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:29:28,912 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:29:28,913 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:29:28,913 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:29:28,913 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:29:28,913 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:29:28,913 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:36:38,728 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:36:38,728 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:36:39,075 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:36:39,075 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:36:39,075 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:36:39,076 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:36:39,076 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:36:39,076 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:41:31,573 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:41:31,573 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:41:31,780 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:41:31,780 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:41:31,781 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:41:31,781 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:41:31,781 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:41:31,781 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:41:57,989 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:41:58,003 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:41:58,087 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:41:58,087 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:41:58,087 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:41:58,087 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:41:58,088 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:41:58,088 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:42:00,801 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 20:42:00,803 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 20:42:01,296 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 20:42:01,299 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 20:52:22,422 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 20:52:22,423 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:52:22,757 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 20:52:22,757 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:52:22,757 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:52:22,757 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:52:22,757 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:52:22,758 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:19:10,820 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:19:10,828 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:19:10,893 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:19:10,893 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:19:10,894 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:19:10,894 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:19:10,894 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:19:10,894 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:19:17,629 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:19:17,629 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:19:17,662 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:19:17,662 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:19:17,663 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:19:17,663 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:19:17,664 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:19:17,664 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:51:58,961 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:51:58,968 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:51:59,040 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:51:59,040 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:51:59,040 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:51:59,041 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:51:59,041 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:51:59,041 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:53:44,641 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:53:44,641 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:53:44,925 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:53:44,925 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:53:44,926 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:53:44,926 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:53:44,927 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:53:44,927 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:53:52,577 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:53:52,577 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:53:52,618 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:53:52,618 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:53:52,619 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:53:52,619 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:53:52,619 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:53:52,619 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:53:54,660 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 21:53:54,665 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 21:53:55,323 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:53:55,325 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:54:41,563 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:54:41,577 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:54:41,715 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:54:41,715 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:54:41,716 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:54:41,717 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:54:41,718 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:54:41,718 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:54:42,057 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 403 Forbidden"
+2025-09-23 21:54:42,060 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': 'Token has expired or is invalid'}
+2025-09-23 21:54:42,356 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:54:42,357 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:54:56,233 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:54:56,234 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:54:56,359 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:54:56,359 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:54:56,359 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:54:56,359 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:54:56,359 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:54:56,360 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:54:57,371 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 21:54:58,002 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 400 Bad Request"
+2025-09-23 21:54:58,007 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': '{\'message\': "Could not find the \'login_count\' column of \'volunteers\' in the schema cache", \'code\': \'PGRST204\', \'hint\': None, \'details\': None}'}
+2025-09-23 21:54:58,232 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:54:58,233 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:55:14,099 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:14,099 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:14,211 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:14,212 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:14,214 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:14,218 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:14,218 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:14,219 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:55:14,513 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 403 Forbidden"
+2025-09-23 21:55:14,515 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': 'Token has expired or is invalid'}
+2025-09-23 21:55:14,810 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:55:14,811 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:55:22,872 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:22,873 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:22,997 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:22,997 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:22,998 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:22,998 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:22,998 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:22,999 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:55:26,558 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:26,560 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:26,653 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:26,655 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:26,656 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:26,656 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:26,657 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:26,657 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:55:26,982 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:26,986 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:27,055 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:27,056 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:27,057 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:27,058 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:27,058 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:27,058 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:55:27,917 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 21:55:28,473 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 21:55:28,475 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 21:55:28,766 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:55:28,767 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:55:47,413 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:47,414 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:47,504 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:47,504 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:47,505 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:47,505 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:47,506 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:47,507 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:55:47,784 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 403 Forbidden"
+2025-09-23 21:55:47,786 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': 'Token has expired or is invalid'}
+2025-09-23 21:55:48,115 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:55:48,116 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:55:59,679 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:55:59,681 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:55:59,766 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:55:59,767 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:55:59,767 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:55:59,767 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:55:59,767 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:55:59,767 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:56:00,174 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 403 Forbidden"
+2025-09-23 21:56:00,177 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': 'Token has expired or is invalid'}
+2025-09-23 21:56:00,407 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:56:00,409 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:56:12,880 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:56:12,898 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:56:12,973 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:56:12,973 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:56:12,973 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:56:12,973 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:56:12,973 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:56:12,974 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:56:13,154 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 429 Too Many Requests"
+2025-09-23 21:56:13,157 - __main__ - ERROR - Event: otp_failed by tolaniakinola@gmail.com - {'error': 'For security purposes, you can only request this after 14 seconds.'}
+2025-09-23 21:56:13,487 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:56:13,489 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:56:15,187 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:56:15,188 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:56:15,260 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:56:15,260 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:56:15,260 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:56:15,260 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:56:15,261 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:56:15,261 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 21:56:15,436 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 429 Too Many Requests"
+2025-09-23 21:56:15,442 - __main__ - ERROR - Event: otp_failed by tolaniakinola@gmail.com - {'error': 'For security purposes, you can only request this after 11 seconds.'}
+2025-09-23 21:56:15,647 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 21:56:15,648 - __main__ - ERROR - Failed to log event to database: {'message': "Could not find the 'level' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 21:59:48,823 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 21:59:48,832 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 21:59:49,044 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 21:59:49,045 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 21:59:49,045 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 21:59:49,045 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 21:59:49,045 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 21:59:49,045 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:07:09,033 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:07:09,047 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:07:09,134 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:07:09,134 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:07:09,134 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:07:09,135 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:07:09,135 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:07:09,137 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:07:10,592 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 22:07:10,595 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 22:07:10,986 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:07:10,988 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:07:33,360 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:07:33,360 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:07:33,474 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:07:33,474 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:07:33,474 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:07:33,475 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:07:33,475 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:07:33,475 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:07:33,779 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 22:07:34,018 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 400 Bad Request"
+2025-09-23 22:07:34,022 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': '{\'message\': "Could not find the \'login_count\' column of \'volunteers\' in the schema cache", \'code\': \'PGRST204\', \'hint\': None, \'details\': None}'}
+2025-09-23 22:07:34,165 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:07:34,166 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:11:13,540 - __main__ - INFO - Secret SUPABASE_URL loaded from Streamlit secrets
+2025-09-23 22:11:13,542 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:11:14,060 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:11:14,061 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:11:14,061 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:11:14,062 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:11:14,062 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:11:14,063 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:11:14,906 - httpx - INFO - HTTP Request: PATCH https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?email=eq.None "HTTP/2 200 OK"
+2025-09-23 22:11:14,927 - __main__ - INFO - Event: shift_end by None - {'reason': 'cutoff_8pm', 'end_time': '2025-09-24T02:11:14.271457'}
+2025-09-23 22:11:15,166 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:11:15,171 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:11:15,340 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.None "HTTP/2 406 Not Acceptable"
+2025-09-23 22:11:15,343 - __main__ - WARNING - Failed to fetch volunteer data for None: {'message': 'Cannot coerce the result to a single JSON object', 'code': 'PGRST116', 'hint': None, 'details': 'The result contains 0 rows'}
+2025-09-23 22:11:15,750 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.None "HTTP/2 200 OK"
+2025-09-23 22:11:16,033 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 22:12:11,349 - __main__ - INFO - Secret SUPABASE_URL loaded from Streamlit secrets
+2025-09-23 22:12:11,350 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:12:11,634 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:12:11,635 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:12:11,635 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:12:11,635 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:12:11,635 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:12:11,636 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:12:12,165 - httpx - INFO - HTTP Request: PATCH https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?email=eq.None "HTTP/2 200 OK"
+2025-09-23 22:12:12,184 - __main__ - INFO - Event: shift_end by None - {'reason': 'cutoff_8pm', 'end_time': '2025-09-24T02:12:11.803802'}
+2025-09-23 22:12:12,314 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:12:12,317 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:12:12,529 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.None "HTTP/2 406 Not Acceptable"
+2025-09-23 22:12:12,532 - __main__ - WARNING - Failed to fetch volunteer data for None: {'message': 'Cannot coerce the result to a single JSON object', 'code': 'PGRST116', 'hint': None, 'details': 'The result contains 0 rows'}
+2025-09-23 22:12:12,731 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.None "HTTP/2 200 OK"
+2025-09-23 22:12:12,914 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 22:12:42,808 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:12:42,808 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:12:42,924 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:12:42,924 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:12:42,924 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:12:42,924 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:12:42,925 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:12:42,925 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:12:44,022 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 22:12:44,024 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 22:12:44,290 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:12:44,291 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:13:02,589 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:13:02,590 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:13:02,623 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:13:02,624 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:13:02,624 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:13:02,624 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:13:02,624 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:13:02,625 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:13:03,235 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 22:13:03,519 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 400 Bad Request"
+2025-09-23 22:13:03,526 - __main__ - ERROR - Event: otp_verification_failed by tolaniakinola@gmail.com - {'error': '{\'message\': "Could not find the \'login_count\' column of \'volunteers\' in the schema cache", \'code\': \'PGRST204\', \'hint\': None, \'details\': None}'}
+2025-09-23 22:13:03,648 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 400 Bad Request"
+2025-09-23 22:13:03,649 - __main__ - WARNING - Failed to log event to database (continuing): {'message': "Could not find the 'timestamp' column of 'events' in the schema cache", 'code': 'PGRST204', 'hint': None, 'details': None}
+2025-09-23 22:16:54,243 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:16:54,243 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:16:54,541 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:16:54,541 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:16:54,542 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:16:54,542 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:16:54,542 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:16:54,542 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:23:46,814 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:23:46,815 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:23:46,848 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:23:46,848 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:23:46,848 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:23:46,848 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:23:46,849 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:23:46,849 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:23:51,414 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:23:51,414 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:23:51,498 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:23:51,499 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:23:51,499 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:23:51,499 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:23:51,499 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:23:51,499 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:23:52,553 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 22:23:52,555 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 22:23:53,361 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 22:23:53,364 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 22:24:14,532 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:24:14,533 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:24:14,695 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:24:14,695 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:24:14,695 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:24:14,696 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:24:14,696 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:24:14,696 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:24:15,696 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 22:24:16,508 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 200 OK"
+2025-09-23 22:24:16,583 - __main__ - INFO - Event: login_success by tolaniakinola@gmail.com - {'method': 'otp'}
+2025-09-23 22:24:16,924 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 22:24:16,925 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 22:24:17,182 - httpx - INFO - HTTP Request: PATCH https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 22:24:17,191 - __main__ - INFO - Event: shift_end by tolaniakinola@gmail.com - {'reason': 'cutoff_8pm', 'end_time': '2025-09-24T02:24:16.929366'}
+2025-09-23 22:24:17,392 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 22:24:17,396 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 22:26:45,926 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:26:45,931 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:26:46,041 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:26:46,041 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:26:46,045 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:26:46,046 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:26:46,046 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:26:46,046 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:42:11,474 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:42:11,482 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:42:11,705 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:42:11,705 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:42:11,706 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:42:11,706 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:42:11,706 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:42:11,707 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:42:18,297 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:42:18,297 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:42:18,424 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:42:18,424 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:42:18,424 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:42:18,424 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:42:18,425 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:42:18,426 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:42:19,747 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 22:42:19,750 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 22:42:20,315 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 22:42:20,317 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 22:42:51,148 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 22:42:51,148 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 22:42:51,262 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 22:42:51,263 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 22:42:51,264 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 22:42:51,264 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 22:42:51,264 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 22:42:51,265 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 22:42:51,595 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 22:42:51,948 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 200 OK"
+2025-09-23 22:42:52,001 - __main__ - INFO - Event: login_success by tolaniakinola@gmail.com - {'method': 'otp'}
+2025-09-23 22:42:52,185 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 22:42:52,187 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 22:42:52,388 - httpx - INFO - HTTP Request: PATCH https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 22:42:52,394 - __main__ - INFO - Event: shift_end by tolaniakinola@gmail.com - {'reason': 'cutoff_8pm', 'end_time': '2025-09-24T02:42:52.190918'}
+2025-09-23 22:42:52,593 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 22:42:52,595 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:11:17,625 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:11:17,627 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:11:17,833 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:11:17,833 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:11:17,833 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:11:17,834 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:11:17,834 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:11:17,834 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:11:34,673 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:11:34,674 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:11:34,772 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:11:34,773 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:11:34,773 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:11:34,773 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:11:34,774 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:11:34,775 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:11:35,983 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 23:11:35,985 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 23:11:37,001 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:11:37,002 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:11:52,893 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:11:52,894 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:11:53,004 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:11:53,005 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:11:53,005 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:11:53,006 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:11:53,006 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:11:53,007 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:11:53,363 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 23:11:53,699 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 200 OK"
+2025-09-23 23:11:53,756 - __main__ - INFO - Event: login_success by tolaniakinola@gmail.com - {'method': 'otp'}
+2025-09-23 23:11:53,979 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 23:11:53,981 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:11:54,156 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:11:54,604 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:11:54,918 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:13:25,890 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:13:25,896 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:13:25,957 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:13:25,957 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:13:25,957 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:13:25,958 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:13:25,958 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:13:25,959 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:13:26,368 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:26,558 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:26,762 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visits?select=id%2Cstarted_at&started_at=gte.2025-09-23+00%3A00%3A00&started_at=lte.2025-09-23+23%3A59%3A59 "HTTP/2 200 OK"
+2025-09-23 23:13:26,909 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visits "HTTP/2 401 Unauthorized"
+2025-09-23 23:13:26,912 - __main__ - ERROR - Event: visit_start_failed by tolaniakinola@gmail.com - {'error': '{\'message\': \'new row violates row-level security policy for table "visits"\', \'code\': \'42501\', \'hint\': None, \'details\': None}'}
+2025-09-23 23:13:27,050 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:13:27,053 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:13:27,176 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:13:45,961 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:13:45,962 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:13:46,023 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:13:46,023 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:13:46,024 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:13:46,025 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:13:46,026 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:13:46,026 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:13:46,827 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:47,239 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:47,908 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:13:47,914 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:13:47,985 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:13:47,989 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:13:47,989 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:13:47,991 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:13:48,046 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:13:48,056 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:13:48,380 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:48,613 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:48,804 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:13:51,805 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:13:51,807 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:13:51,837 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:13:51,838 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:13:51,838 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:13:51,838 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:13:51,839 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:13:51,839 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:13:52,070 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:52,292 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:52,490 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:13:55,666 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:13:55,669 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:13:55,737 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:13:55,738 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:13:55,738 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:13:55,738 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:13:55,739 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:13:55,739 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:13:55,994 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:56,160 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:13:56,565 - __main__ - ERROR - AI identification failed: AI service error: HTTPSConnectionPool(host='api.nebius.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x1161d3700>: Failed to resolve 'api.nebius.ai' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-09-23 23:13:56,567 - __main__ - ERROR - Event: ai_identification_failed by tolaniakinola@gmail.com - {'error': 'AI service error: HTTPSConnectionPool(host=\'api.nebius.ai\', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x1161d3700>: Failed to resolve \'api.nebius.ai\' ([Errno 8] nodename nor servname provided, or not known)"))'}
+2025-09-23 23:13:56,734 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:13:56,736 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:13:56,878 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:21:33,164 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:21:33,170 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:21:33,383 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:21:33,383 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:21:33,384 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:21:33,384 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:21:33,384 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:21:33,384 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:23:56,632 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:23:56,632 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:23:56,699 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:23:56,700 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:23:56,701 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:23:56,701 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:23:56,702 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:23:56,703 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:23:58,403 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 23:23:58,406 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 23:23:58,874 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:23:58,877 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:24:14,122 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:24:14,125 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:24:14,259 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:24:14,259 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:24:14,259 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:24:14,260 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:24:14,260 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:24:14,260 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:24:14,512 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 23:24:14,814 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 200 OK"
+2025-09-23 23:24:14,873 - __main__ - INFO - Event: login_success by tolaniakinola@gmail.com - {'method': 'otp'}
+2025-09-23 23:24:15,019 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 23:24:15,020 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:24:15,312 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:15,506 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:15,668 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:24:20,278 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:24:20,278 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:24:20,366 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:24:20,366 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:24:20,366 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:24:20,366 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:24:20,367 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:24:20,367 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:24:20,585 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:20,676 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:20,776 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visits?select=id%2Cstarted_at&started_at=gte.2025-09-23+00%3A00%3A00&started_at=lte.2025-09-23+23%3A59%3A59 "HTTP/2 200 OK"
+2025-09-23 23:24:20,891 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visits "HTTP/2 401 Unauthorized"
+2025-09-23 23:24:20,893 - __main__ - ERROR - Event: visit_start_failed by tolaniakinola@gmail.com - {'error': '{\'message\': \'new row violates row-level security policy for table "visits"\', \'code\': \'42501\', \'hint\': None, \'details\': None}'}
+2025-09-23 23:24:20,975 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:24:20,976 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:24:21,090 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:24:31,773 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:24:31,774 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:24:31,853 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:24:31,853 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:24:31,853 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:24:31,854 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:24:31,854 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:24:31,854 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:24:32,038 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:32,157 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:32,341 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:24:35,185 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:24:35,194 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:24:35,258 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:24:35,258 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:24:35,259 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:24:35,259 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:24:35,260 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:24:35,260 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:24:35,507 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:35,669 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:24:36,106 - __main__ - ERROR - AI identification failed: AI service error: HTTPSConnectionPool(host='api.nebius.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115927820>: Failed to resolve 'api.nebius.ai' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-09-23 23:24:36,107 - __main__ - ERROR - Event: ai_identification_failed by tolaniakinola@gmail.com - {'error': 'AI service error: HTTPSConnectionPool(host=\'api.nebius.ai\', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115927820>: Failed to resolve \'api.nebius.ai\' ([Errno 8] nodename nor servname provided, or not known)"))'}
+2025-09-23 23:24:36,219 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:24:36,220 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:24:36,348 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:27:49,500 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:27:49,500 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:27:49,699 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:27:49,699 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:27:49,699 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:27:49,700 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:27:49,700 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:27:49,700 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:28:30,928 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:28:30,971 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:28:30,994 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:28:30,994 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:28:30,995 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:28:30,995 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:28:30,996 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:28:30,996 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:28:31,926 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/otp "HTTP/2 200 OK"
+2025-09-23 23:28:31,928 - __main__ - INFO - Event: otp_requested by tolaniakinola@gmail.com - {'method': 'email'}
+2025-09-23 23:28:32,126 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:28:32,128 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:28:50,165 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:28:50,186 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:28:50,239 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:28:50,240 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:28:50,240 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:28:50,240 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:28:50,240 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:28:50,240 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:28:50,413 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/verify "HTTP/2 200 OK"
+2025-09-23 23:28:50,592 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?on_conflict=email "HTTP/2 200 OK"
+2025-09-23 23:28:50,641 - __main__ - INFO - Event: login_success by tolaniakinola@gmail.com - {'method': 'otp'}
+2025-09-23 23:28:50,750 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 403 Forbidden"
+2025-09-23 23:28:50,752 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:28:50,841 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:28:51,036 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:28:51,137 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:29:13,082 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:29:13,085 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:29:13,137 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:29:13,137 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:29:13,138 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:29:13,138 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:29:13,139 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:29:13,139 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:29:13,326 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:13,470 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:13,646 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:29:19,562 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:29:19,563 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:29:19,668 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:29:19,675 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:29:19,675 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:29:19,675 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:29:19,675 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:29:19,676 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:29:19,858 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:20,009 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:20,100 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:29:27,924 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:29:27,925 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:29:27,963 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:29:27,963 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:29:27,965 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:29:27,967 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:29:27,970 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:29:27,975 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:29:28,271 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:28,408 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:28,701 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:29:33,677 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:29:33,678 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:29:33,747 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:29:33,747 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:29:33,748 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:29:33,750 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:29:33,751 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:29:33,751 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:29:33,948 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:34,038 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:29:34,396 - __main__ - ERROR - AI identification failed: AI service error: HTTPSConnectionPool(host='api.nebius.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115432140>: Failed to resolve 'api.nebius.ai' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-09-23 23:29:34,397 - __main__ - ERROR - Event: ai_identification_failed by tolaniakinola@gmail.com - {'error': 'AI service error: HTTPSConnectionPool(host=\'api.nebius.ai\', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115432140>: Failed to resolve \'api.nebius.ai\' ([Errno 8] nodename nor servname provided, or not known)"))'}
+2025-09-23 23:29:34,484 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:29:34,485 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:29:34,579 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-23 23:33:31,111 - __main__ - INFO - Secret SUPABASE_URL loaded from environment
+2025-09-23 23:33:31,124 - __main__ - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 23:33:31,229 - __main__ - INFO - Supabase client initialized successfully
+2025-09-23 23:33:31,230 - __main__ - INFO - Secret PROVIDER loaded from environment
+2025-09-23 23:33:31,230 - __main__ - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 23:33:31,231 - __main__ - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 23:33:31,231 - __main__ - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 23:33:31,232 - __main__ - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 23:33:32,054 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/volunteers?select=%2A&email=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:33:32,200 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/visit_items_p?select=id%2Ctimestamp%2Cvolunteer&timestamp=gte.2025-09-23+00%3A00%3A00&timestamp=lte.2025-09-23+23%3A59%3A59&volunteer=eq.tolaniakinola%40gmail.com "HTTP/2 200 OK"
+2025-09-23 23:33:32,673 - __main__ - ERROR - AI identification failed: AI service error: HTTPSConnectionPool(host='api.nebius.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115495720>: Failed to resolve 'api.nebius.ai' ([Errno 8] nodename nor servname provided, or not known)"))
+2025-09-23 23:33:32,675 - __main__ - ERROR - Event: ai_identification_failed by tolaniakinola@gmail.com - {'error': 'AI service error: HTTPSConnectionPool(host=\'api.nebius.ai\', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x115495720>: Failed to resolve \'api.nebius.ai\' ([Errno 8] nodename nor servname provided, or not known)"))'}
+2025-09-23 23:33:32,818 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/events "HTTP/2 401 Unauthorized"
+2025-09-23 23:33:32,822 - __main__ - WARNING - Failed to log event to database (continuing): {'message': 'new row violates row-level security policy for table "events"', 'code': '42501', 'hint': None, 'details': None}
+2025-09-23 23:33:33,026 - httpx - INFO - HTTP Request: GET https://oudjcqhyldpncjbxohsg.supabase.co/rest/v1/v_daily_activity?select=%2A "HTTP/2 200 OK"
+2025-09-24 00:28:40,318 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 06:19:50,446 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 06:19:50,584 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 07:19:40,574 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 07:19:40,879 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 09:37:29,436 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 09:37:29,584 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 10:37:19,496 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 10:37:19,688 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 11:39:25,913 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
+2025-09-24 11:39:26,070 - httpx - INFO - HTTP Request: POST https://oudjcqhyldpncjbxohsg.supabase.co/auth/v1/token?grant_type=refresh_token "HTTP/2 200 OK"
