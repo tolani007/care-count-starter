@@ -1,0 +1,62 @@
+2025-09-23 20:26:01,318 - INFO - testing: STARTED - Running pre-deployment tests
+2025-09-23 20:26:11,954 - INFO - Secret SUPABASE_URL loaded from Streamlit secrets
+2025-09-23 20:26:11,955 - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:26:12,229 - INFO - Supabase client initialized successfully
+2025-09-23 20:26:12,229 - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:26:12,229 - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:26:12,230 - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:26:12,230 - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:26:12,230 - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:26:12,234 - INFO - import_test: SUCCESS - Modern app imports successfully
+2025-09-23 20:26:12,235 - INFO - ui_import_test: SUCCESS - UI improvements import successfully
+2025-09-23 20:26:13,555 - INFO - app_tests: SUCCESS - All app tests passed
+2025-09-23 20:26:13,555 - INFO - testing: SUCCESS - All tests passed
+2025-09-23 20:26:13,555 - INFO - deployment: STARTED - Deploying modern UI
+2025-09-23 20:26:15,676 - INFO - stop_app: SUCCESS - Stopped current app
+2025-09-23 20:26:15,827 - INFO - backup_creation: SUCCESS - Created backup: pre_modern_deployment_20250923_202615
+2025-09-23 20:26:15,831 - INFO - file_replacement: SUCCESS - Replaced app with modern version
+2025-09-23 20:26:20,853 - INFO - app_start: SUCCESS - Modern app started successfully
+2025-09-23 20:26:20,857 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250923_202620.json
+2025-09-23 20:36:21,190 - INFO - testing: STARTED - Running pre-deployment tests
+2025-09-23 20:36:25,451 - INFO - Secret SUPABASE_URL loaded from Streamlit secrets
+2025-09-23 20:36:25,451 - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:36:25,668 - INFO - Supabase client initialized successfully
+2025-09-23 20:36:25,669 - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:36:25,669 - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:36:25,670 - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:36:25,670 - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:36:25,670 - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:36:25,672 - INFO - import_test: SUCCESS - Modern app imports successfully
+2025-09-23 20:36:25,672 - INFO - ui_import_test: SUCCESS - UI improvements import successfully
+2025-09-23 20:36:26,198 - INFO - app_tests: SUCCESS - All app tests passed
+2025-09-23 20:36:26,199 - INFO - testing: SUCCESS - All tests passed
+2025-09-23 20:36:26,199 - INFO - deployment: STARTED - Deploying modern UI
+2025-09-23 20:36:28,278 - INFO - stop_app: SUCCESS - Stopped current app
+2025-09-23 20:36:28,395 - INFO - backup_creation: SUCCESS - Created backup: pre_modern_deployment_20250923_203628
+2025-09-23 20:36:28,399 - INFO - file_replacement: SUCCESS - Replaced app with modern version
+2025-09-23 20:36:33,420 - INFO - app_start: SUCCESS - Modern app started successfully
+2025-09-23 20:36:33,423 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250923_203633.json
+2025-09-23 20:41:01,240 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250923_204101.json
+2025-09-23 20:41:07,876 - INFO - rollback: STARTED - Rolling back to pre_modern_deployment_20250923_203628
+2025-09-23 20:41:13,010 - INFO - rollback: SUCCESS - Rolled back to pre_modern_deployment_20250923_203628
+2025-09-23 20:41:13,012 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250923_204113.json
+2025-09-23 20:52:02,354 - INFO - testing: STARTED - Running pre-deployment tests
+2025-09-23 20:52:07,558 - INFO - Secret SUPABASE_URL loaded from Streamlit secrets
+2025-09-23 20:52:07,558 - INFO - Secret SUPABASE_KEY loaded from environment
+2025-09-23 20:52:07,822 - INFO - Supabase client initialized successfully
+2025-09-23 20:52:07,822 - INFO - Secret PROVIDER loaded from environment
+2025-09-23 20:52:07,823 - INFO - Secret GEMMA_MODEL loaded from environment
+2025-09-23 20:52:07,823 - INFO - Secret NEBIUS_API_KEY loaded from environment
+2025-09-23 20:52:07,825 - INFO - Secret NEBIUS_BASE_URL loaded from environment
+2025-09-23 20:52:07,825 - INFO - Secret FEATHERLESS_BASE_URL loaded from Streamlit secrets
+2025-09-23 20:52:07,829 - INFO - import_test: SUCCESS - Modern app imports successfully
+2025-09-23 20:52:07,829 - INFO - ui_import_test: SUCCESS - UI improvements import successfully
+2025-09-23 20:52:08,502 - INFO - app_tests: SUCCESS - All app tests passed
+2025-09-23 20:52:08,502 - INFO - testing: SUCCESS - All tests passed
+2025-09-23 20:52:08,503 - INFO - deployment: STARTED - Deploying modern UI
+2025-09-23 20:52:10,618 - INFO - stop_app: SUCCESS - Stopped current app
+2025-09-23 20:52:10,729 - INFO - backup_creation: SUCCESS - Created backup: pre_modern_deployment_20250923_205210
+2025-09-23 20:52:10,733 - INFO - file_replacement: SUCCESS - Replaced app with modern version
+2025-09-23 20:52:15,752 - INFO - app_start: SUCCESS - Modern app started successfully
+2025-09-23 20:52:15,754 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250923_205215.json
+2025-09-24 09:27:15,684 - INFO - Deployment log saved to /Users/tiki/Desktop/machine learning hub/care-count-starter/backups/deployment_log_20250924_092715.json
