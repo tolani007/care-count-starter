@@ -165,7 +165,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
     # Modern login form
     with st.container():
         st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-        st.subheader("🔐 Sign In")
+        st.subheader("Sign In")
         st.markdown("Enter your email to receive a secure login code.")
         
         with st.form("otp_request", clear_on_submit=False):
