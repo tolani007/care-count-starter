@@ -159,7 +159,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
     # Modern hero section for login
     st.markdown(ModernUIComponents.create_hero_section(
         "Care Count",
-        "Thanks for showing up for the community today. Snap items, keep visits tidy, and help us understand the impact of your time."
+        "Snap items, track visits, and make an impact."
     ), unsafe_allow_html=True)
 
     # Modern login form
