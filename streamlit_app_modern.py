@@ -35,7 +35,7 @@ os.environ.setdefault("HOME", "/tmp")
 os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 
 TZ             = os.getenv("APP_TZ", "America/Toronto")
-CUTOFF_HOUR    = int(os.getenv("CUTOFF_HOUR", "20"))   # 8pm local
+CUTOFF_HOUR    = int(os.getenv("CUTOFF_HOUR", "-1"))   # -1 disables daily cutoff
 INACTIVITY_MIN = int(os.getenv("INACTIVITY_MIN", "30"))
 
 def local_now() -> datetime:
@@ -128,13 +128,12 @@ FEATH_BASE_URL   = get_secret("FEATHERLESS_BASE_URL", "https://api.featherless.a
 def log_event(action: str, actor: Optional[str], details: dict, level: str = "info"):
     """Enhanced event logging with multiple levels"""
     log_data = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "happened_at": datetime.utcnow().isoformat(),
         "action": action,
         "actor_email": actor,
-        "details": details,
-        "level": level
+        "details": json.dumps(details) if isinstance(details, dict) else str(details)
     }
-    
+
     # Log to file
     if level == "error":
         logger.error(f"Event: {action} by {actor} - {details}")
@@ -142,12 +141,12 @@ def log_event(action: str, actor: Optional[str], details: dict, level: str = "in
         logger.warning(f"Event: {action} by {actor} - {details}")
     else:
         logger.info(f"Event: {action} by {actor} - {details}")
-    
-    # Log to database
+
+    # Log to database (without level field to avoid schema issues)
     try:
         sb.table("events").insert(log_data).execute()
     except Exception as e:
-        logger.error(f"Failed to log event to database: {e}")
+        logger.warning(f"Failed to log event to database (continuing): {e}")
 
 # ------------------------ Modern Authentication UI ------------------------
 def auth_block() -> tuple[bool, Optional[str]]:
@@ -160,13 +159,13 @@ def auth_block() -> tuple[bool, Optional[str]]:
     # Modern hero section for login
     st.markdown(ModernUIComponents.create_hero_section(
         "Care Count",
-        "Thanks for showing up for the community today. Snap items, keep visits tidy, and help us understand the impact of your time."
-    ))
+        "Snap items, track visits, and make an impact."
+    ), unsafe_allow_html=True)
 
     # Modern login form
     with st.container():
         st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-        st.subheader("🔐 Sign In")
+        st.subheader("Sign In")
         st.markdown("Enter your email to receive a secure login code.")
         
         with st.form("otp_request", clear_on_submit=False):
@@ -180,7 +179,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 send = st.form_submit_button("📧 Send Login Code", use_container_width=True)
-            
+
             if send:
                 if not email or "@" not in email:
                     st.error("Please enter a valid email address.")
@@ -192,8 +191,14 @@ def auth_block() -> tuple[bool, Optional[str]]:
                             st.success("✅ Login code sent! Check your email.")
                             log_event("otp_requested", email, {"method": "email"})
                     except Exception as e:
-                        st.error(f"❌ Could not send code: {e}")
-                        log_event("otp_failed", email, {"error": str(e)}, "error")
+                        error_msg = str(e)
+                        if "429" in error_msg or "Too Many Requests" in error_msg:
+                            st.warning("⏳ Please wait a moment before requesting another code. For security, there's a brief delay between requests.")
+                        elif "Invalid email" in error_msg:
+                            st.error("❌ Please enter a valid email address.")
+                        else:
+                            st.error(f"❌ Could not send code: {error_msg}")
+                        log_event("otp_failed", email, {"error": error_msg}, "error")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -224,8 +229,15 @@ def auth_block() -> tuple[bool, Optional[str]]:
                             with st.spinner("Verifying code..."):
                                 res = sb.auth.verify_otp({"email": st.session_state["auth_email"], "token": code, "type": "email"})
                                 if res and res.user:
+                                    # Ensure subsequent PostgREST requests carry the user's JWT for RLS
+                                    try:
+                                        token = getattr(getattr(res, "session", None), "access_token", None)
+                                        if token:
+                                            sb.postgrest.auth(token)
+                                    except Exception:
+                                        pass
                                     email = st.session_state["auth_email"]
-                                    
+
                                     # Enhanced volunteer upsert
                                     volunteer_data = {
                                         "email": email,
@@ -234,20 +246,28 @@ def auth_block() -> tuple[bool, Optional[str]]:
                                         "shift_ended_at": None,
                                         "login_count": 1  # Track login frequency
                                     }
-                                    
+
                                     sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
-                                    
+
                                     st.session_state["user_email"] = email
                                     st.session_state["shift_started"] = True
                                     st.session_state["last_activity_at"] = local_now()
-                                    
+
                                     log_event("login_success", email, {"method": "otp"})
                                     st.success("🎉 Welcome back! Your shift has started.")
                                     st.balloons()
                                     return True, email
                         except Exception as e:
-                            st.error(f"❌ Verification failed: {e}")
-                            log_event("otp_verification_failed", st.session_state["auth_email"], {"error": str(e)}, "error")
+                            error_msg = str(e)
+                            if "expired" in error_msg.lower() or "invalid" in error_msg.lower():
+                                st.error("❌ This code has expired or is invalid. Please request a new code.")
+                                # Clear the auth_email to allow new code request
+                                if "auth_email" in st.session_state:
+                                    del st.session_state["auth_email"]
+                                st.rerun()
+                            else:
+                                st.error(f"❌ Verification failed: {error_msg}")
+                            log_event("otp_verification_failed", st.session_state.get("auth_email"), {"error": error_msg}, "error")
             
             st.markdown('</div>', unsafe_allow_html=True)
     
@@ -265,22 +285,22 @@ def end_shift(email: str, reason: str):
 def guard_cutoff_and_idle(email: str):
     """Enhanced session management with better UX"""
     now = local_now()
+    # Enforce daily cutoff only when configured
+    if CUTOFF_HOUR >= 0:
+        cutoff = now.replace(hour=CUTOFF_HOUR, minute=0, second=0, microsecond=0)
+        if now >= cutoff:
+            end_shift(email, "cutoff_8pm")
+
+    # Inactivity guard remains unchanged
     last = st.session_state.get("last_activity_at")
-    
+
     if last and (now - last).total_seconds() > INACTIVITY_MIN * 60:
         end_shift(email, "inactivity")
         st.session_state.clear()
         st.warning("⏰ You were logged out due to inactivity. Thank you for volunteering today!")
         st.stop()
-    
-    st.session_state["last_activity_at"] = now
 
-    cutoff = now.replace(hour=CUTOFF_HOUR, minute=0, second=0, microsecond=0)
-    if now >= cutoff:
-        end_shift(email, "cutoff_8pm")
-        st.session_state.clear()
-        st.info("🌅 We close the day at 8pm. Your shift has been ended. Thank you so much!")
-        st.stop()
+    st.session_state["last_activity_at"] = now
 
 # ------------------------ Main App Flow ------------------------
 def main():
@@ -298,7 +318,7 @@ def main():
         "Care Count Dashboard",
         "Manage visits, track items, and make a difference in your community.",
         user_email
-    ))
+    ), unsafe_allow_html=True)
 
     # Enhanced status cards
     vrow = fetch_volunteer_row(user_email) or {}
@@ -711,16 +731,25 @@ def preprocess_for_label(img: Image.Image) -> Image.Image:
 def gemma_item_name(img_bytes: bytes) -> str:
     """Enhanced AI item identification with better error handling"""
     try:
+        primary_err = None
         if PROVIDER == "nebius":
-            if not NEBIUS_API_KEY: 
-                raise RuntimeError("NEBIUS_API_KEY missing")
-            return _openai_style_chat(NEBIUS_BASE_URL, NEBIUS_API_KEY, GEMMA_MODEL, img_bytes)
-        elif PROVIDER == "featherless":
-            if not FEATH_API_KEY: 
-                raise RuntimeError("FEATHERLESS_API_KEY missing")
+            try:
+                if not NEBIUS_API_KEY:
+                    raise RuntimeError("NEBIUS_API_KEY missing")
+                return _openai_style_chat(NEBIUS_BASE_URL, NEBIUS_API_KEY, GEMMA_MODEL, img_bytes)
+            except Exception as e:
+                primary_err = e
+        if PROVIDER == "featherless":
+            try:
+                if not FEATH_API_KEY:
+                    raise RuntimeError("FEATHERLESS_API_KEY missing")
+                return _openai_style_chat(FEATH_BASE_URL, FEATH_API_KEY, GEMMA_MODEL, img_bytes)
+            except Exception as e:
+                primary_err = e
+        # Fallback chain if primary failed or unknown provider
+        if FEATH_API_KEY:
             return _openai_style_chat(FEATH_BASE_URL, FEATH_API_KEY, GEMMA_MODEL, img_bytes)
-        else:
-            raise RuntimeError(f"Unknown PROVIDER: {PROVIDER}")
+        raise primary_err or RuntimeError(f"Unknown PROVIDER: {PROVIDER}")
     except Exception as e:
         logger.error(f"AI identification failed: {e}")
         raise
