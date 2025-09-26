@@ -244,7 +244,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
                                         "last_login_at": datetime.utcnow().isoformat(),
                                         "shift_started_at": datetime.utcnow().isoformat(),
                                         "shift_ended_at": None,
-                                        "login_count": 1  # Track login frequency
+                                       
                                     }
 
                                     sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
