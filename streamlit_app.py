@@ -159,13 +159,13 @@ def auth_block() -> tuple[bool, Optional[str]]:
     # Modern hero section for login
     st.markdown(ModernUIComponents.create_hero_section(
         "Care Count",
-        "Snap items, track visits, and make an impact."
+        "Thanks for showing up for the community today. Snap items, keep visits tidy, and help us understand the impact of your time."
     ), unsafe_allow_html=True)
 
     # Modern login form
     with st.container():
         st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-        st.subheader("Sign In")
+        st.subheader("🔐 Sign In")
         st.markdown("Enter your email to receive a secure login code.")
         
         with st.form("otp_request", clear_on_submit=False):
