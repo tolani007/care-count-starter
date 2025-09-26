@@ -35,7 +35,7 @@ os.environ.setdefault("HOME", "/tmp")
 os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
 
 TZ             = os.getenv("APP_TZ", "America/Toronto")
-CUTOFF_HOUR    = int(os.getenv("CUTOFF_HOUR", "-1"))   # -1 disables daily cutoff
+CUTOFF_HOUR    = int(os.getenv("CUTOFF_HOUR", "20"))   # 8pm local
 INACTIVITY_MIN = int(os.getenv("INACTIVITY_MIN", "30"))
 
 def local_now() -> datetime:
@@ -109,7 +109,7 @@ SUPABASE_KEY = require_secret("SUPABASE_KEY")
 
 # Initialize Supabase client with error handling
 try:
-    sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     logger.info("Supabase client initialized successfully")
 except Exception as e:
     st.error(f"Failed to connect to Supabase: {e}")
@@ -128,7 +128,7 @@ FEATH_BASE_URL   = get_secret("FEATHERLESS_BASE_URL", "https://api.featherless.a
 def log_event(action: str, actor: Optional[str], details: dict, level: str = "info"):
     """Enhanced event logging with multiple levels"""
     log_data = {
-        "happened_at": datetime.utcnow().isoformat(),
+        "timestamp": datetime.utcnow().isoformat(),
         "action": action,
         "actor_email": actor,
         "details": json.dumps(details) if isinstance(details, dict) else str(details)
@@ -159,13 +159,13 @@ def auth_block() -> tuple[bool, Optional[str]]:
     # Modern hero section for login
     st.markdown(ModernUIComponents.create_hero_section(
         "Care Count",
-        "Snap items, track visits, and make an impact."
+        "Thanks for showing up for the community today. Snap items, keep visits tidy, and help us understand the impact of your time."
     ), unsafe_allow_html=True)
 
     # Modern login form
     with st.container():
         st.markdown('<div class="modern-card">', unsafe_allow_html=True)
-        st.subheader("Sign In")
+        st.subheader("🔐 Sign In")
         st.markdown("Enter your email to receive a secure login code.")
         
         with st.form("otp_request", clear_on_submit=False):
@@ -173,32 +173,26 @@ def auth_block() -> tuple[bool, Optional[str]]:
                 "Email Address", 
                 value=st.session_state.get("auth_email") or "", 
                 placeholder="your.email@example.com",
-                help="We'll send you a secure 6-digit code"
+                help="Enter your email address to receive a secure 6-digit login code. This code will be sent to your email and is valid for 10 minutes."
             )
             
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 send = st.form_submit_button("📧 Send Login Code", use_container_width=True)
             
-            if send:
-                if not email or "@" not in email:
+        if send:
+            if not email or "@" not in email:
                     st.error("Please enter a valid email address.")
-                else:
-                    try:
+            else:
+                try:
                         with st.spinner("Sending login code..."):
-                            sb.auth.sign_in_with_otp({"email": email, "shouldCreateUser": True})
-                            st.session_state["auth_email"] = email
+                    sb.auth.sign_in_with_otp({"email": email, "shouldCreateUser": True})
+                    st.session_state["auth_email"] = email
                             st.success("✅ Login code sent! Check your email.")
                             log_event("otp_requested", email, {"method": "email"})
-                    except Exception as e:
-                        error_msg = str(e)
-                        if "429" in error_msg or "Too Many Requests" in error_msg:
-                            st.warning("⏳ Please wait a moment before requesting another code. For security, there's a brief delay between requests.")
-                        elif "Invalid email" in error_msg:
-                            st.error("❌ Please enter a valid email address.")
-                        else:
-                            st.error(f"❌ Could not send code: {error_msg}")
-                        log_event("otp_failed", email, {"error": error_msg}, "error")
+                except Exception as e:
+                        st.error(f"❌ Could not send code: {e}")
+                        log_event("otp_failed", email, {"error": str(e)}, "error")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -214,59 +208,45 @@ def auth_block() -> tuple[bool, Optional[str]]:
                     "Verification Code", 
                     max_chars=6,
                     placeholder="123456",
-                    help="Enter the 6-digit code from your email"
+                    help="Enter the 6-digit verification code that was sent to your email. Check your spam folder if you don't see it in your inbox."
                 )
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
                     ok = st.form_submit_button("✅ Verify & Start Shift", use_container_width=True)
                 
-                if ok:
+            if ok:
                     if len(code) != 6 or not code.isdigit():
                         st.error("Please enter a valid 6-digit code.")
                     else:
-                        try:
+                try:
                             with st.spinner("Verifying code..."):
-                                res = sb.auth.verify_otp({"email": st.session_state["auth_email"], "token": code, "type": "email"})
-                                if res and res.user:
-                                    # Ensure subsequent PostgREST requests carry the user's JWT for RLS
-                                    try:
-                                        token = getattr(getattr(res, "session", None), "access_token", None)
-                                        if token:
-                                            sb.postgrest.auth(token)
-                                    except Exception:
-                                        pass
-                                    email = st.session_state["auth_email"]
+                    res = sb.auth.verify_otp({"email": st.session_state["auth_email"], "token": code, "type": "email"})
+                    if res and res.user:
+                        email = st.session_state["auth_email"]
                                     
                                     # Enhanced volunteer upsert
                                     volunteer_data = {
-                                        "email": email,
-                                        "last_login_at": datetime.utcnow().isoformat(),
-                                        "shift_started_at": datetime.utcnow().isoformat(),
-                                        "shift_ended_at": None
+                            "email": email,
+                            "last_login_at": datetime.utcnow().isoformat(),
+                            "shift_started_at": datetime.utcnow().isoformat(),
+                                        "shift_ended_at": None,
+                                        "login_count": 1  # Track login frequency
                                     }
                                     
                                     sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
                                     
-                                    st.session_state["user_email"] = email
-                                    st.session_state["shift_started"] = True
-                                    st.session_state["last_activity_at"] = local_now()
+                        st.session_state["user_email"] = email
+                        st.session_state["shift_started"] = True
+                        st.session_state["last_activity_at"] = local_now()
                                     
                                     log_event("login_success", email, {"method": "otp"})
                                     st.success("🎉 Welcome back! Your shift has started.")
                                     st.balloons()
-                                    return True, email
-                        except Exception as e:
-                            error_msg = str(e)
-                            if "expired" in error_msg.lower() or "invalid" in error_msg.lower():
-                                st.error("❌ This code has expired or is invalid. Please request a new code.")
-                                # Clear the auth_email to allow new code request
-                                if "auth_email" in st.session_state:
-                                    del st.session_state["auth_email"]
-                                st.rerun()
-                            else:
-                                st.error(f"❌ Verification failed: {error_msg}")
-                            log_event("otp_verification_failed", st.session_state["auth_email"], {"error": error_msg}, "error")
+                        return True, email
+                except Exception as e:
+                            st.error(f"❌ Verification failed: {e}")
+                            log_event("otp_verification_failed", st.session_state["auth_email"], {"error": str(e)}, "error")
             
             st.markdown('</div>', unsafe_allow_html=True)
     
@@ -284,12 +264,6 @@ def end_shift(email: str, reason: str):
 def guard_cutoff_and_idle(email: str):
     """Enhanced session management with better UX"""
     now = local_now()
-    # Enforce daily cutoff only when configured
-    if CUTOFF_HOUR >= 0:
-        cutoff = now.replace(hour=CUTOFF_HOUR, minute=0, second=0, microsecond=0)
-        if now >= cutoff:
-            end_shift(email, "cutoff_8pm")
-    # Inactivity guard remains unchanged
     last = st.session_state.get("last_activity_at")
     
     if last and (now - last).total_seconds() > INACTIVITY_MIN * 60:
@@ -300,16 +274,23 @@ def guard_cutoff_and_idle(email: str):
     
     st.session_state["last_activity_at"] = now
 
+    cutoff = now.replace(hour=CUTOFF_HOUR, minute=0, second=0, microsecond=0)
+    if now >= cutoff:
+        end_shift(email, "cutoff_8pm")
+        st.session_state.clear()
+        st.info("🌅 We close the day at 8pm. Your shift has been ended. Thank you so much!")
+        st.stop()
+
 # ------------------------ Main App Flow ------------------------
 def main():
     """Main application flow with modern UI"""
     
     # Authentication
-    signed_in, user_email = auth_block()
-    if not signed_in:
-        st.stop()
+signed_in, user_email = auth_block()
+if not signed_in:
+    st.stop()
     
-    guard_cutoff_and_idle(user_email)
+guard_cutoff_and_idle(user_email)
 
     # Modern welcome section
     st.markdown(ModernUIComponents.create_hero_section(
@@ -343,8 +324,8 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("🔒 Sign Out", use_container_width=True, type="secondary"):
-            end_shift(user_email, "manual")
-            st.session_state.clear()
+        end_shift(user_email, "manual")
+        st.session_state.clear()
             st.success("✅ Signed out successfully. See you next time!")
             st.rerun()
 
@@ -359,7 +340,7 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        if not active_visit and st.button("🚀 Start New Visit", use_container_width=True, type="primary"):
+        if not active_visit and st.button("🚀 Start New Visit", use_container_width=True, type="primary", help="Start a new student visit session. This will create a unique visit code for tracking items."):
             try:
                 with st.spinner("Creating visit..."):
                     payload = {
@@ -381,7 +362,7 @@ def main():
                 log_event("visit_start_failed", user_email, {"error": str(e)}, "error")
 
     with col2:
-        if active_visit and st.button("🏁 End Visit", use_container_width=True, type="secondary"):
+        if active_visit and st.button("🏁 End Visit", use_container_width=True, type="secondary", help="End the current student visit session. This will finalize the visit and prepare for the next student."):
             try:
                 with st.spinner("Ending visit..."):
                     sb.table("visits").update({"ended_at": datetime.utcnow().isoformat()}) \
@@ -413,14 +394,14 @@ def main():
     
     with col1:
         st.subheader("📷 Camera Capture")
-        cam = st.camera_input("Take a photo of the item", help="Position the item clearly in the frame")
+        cam = st.camera_input("Take a photo of the item", help="Use your device's camera to take a clear photo of the item. Make sure the item is well-lit and clearly visible in the frame.")
     
     with col2:
         st.subheader("📁 File Upload")
         up = st.file_uploader(
             "Upload an image", 
             type=["png","jpg","jpeg"],
-            help="Supported formats: PNG, JPG, JPEG"
+            help="Upload a photo of the item from your device. Supported formats: PNG, JPG, JPEG. Maximum file size: 200MB."
         )
 
     img_file = cam or up
@@ -429,7 +410,7 @@ def main():
             img = Image.open(img_file).convert("RGB")
             st.image(img, use_container_width=True, caption="Captured Image")
             
-            if st.button("🔍 Identify Item with AI", use_container_width=True, type="primary"):
+            if st.button("🔍 Identify Item with AI", use_container_width=True, type="primary", help="Use AI to automatically identify the item in the image. This will analyze the photo and suggest an item name."):
                 with st.spinner("Analyzing image with AI..."):
                     t0 = time.time()
                     try:
@@ -474,7 +455,7 @@ def main():
             "Item Name", 
             value=st.session_state.get("scanned_item_name",""),
             placeholder="Enter item name or use AI detection above",
-            help="Required field - item name for tracking"
+            help="Enter the name of the item. You can type it manually or use the AI detection feature above to automatically identify it from a photo."
         )
     
     with col2:
@@ -510,7 +491,7 @@ def main():
     )
 
     save_disabled = not st.session_state.get("active_visit")
-    if st.button("✅ Save Item to Visit", disabled=save_disabled, use_container_width=True, type="primary"):
+    if st.button("✅ Save Item to Visit", disabled=save_disabled, use_container_width=True, type="primary", help="Save the item to the current visit. You must start a visit first before you can log items."):
         v = st.session_state.get("active_visit")
         if not v:
             st.warning("⚠️ Please start a visit first before logging items.")
@@ -703,7 +684,7 @@ def fallback_visit_code() -> str:
         todays = sb.table("visits").select("id,started_at").gte("started_at", f"{day} 00:00:00") \
                  .lte("started_at", f"{day} 23:59:59").execute().data or []
         seq = len(todays) + 1
-    except Exception:
+except Exception:
         seq = int(time.time()) % 1000
     return f"V-{seq}-{local_now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:6]}"
 
@@ -727,27 +708,18 @@ def preprocess_for_label(img: Image.Image) -> Image.Image:
     return img
 
 def gemma_item_name(img_bytes: bytes) -> str:
-    """Enhanced AI item identification with better error handling and fallback"""
+    """Enhanced AI item identification with better error handling"""
     try:
-        primary_err = None
         if PROVIDER == "nebius":
-            try:
-                if not NEBIUS_API_KEY:
-                    raise RuntimeError("NEBIUS_API_KEY missing")
-                return _openai_style_chat(NEBIUS_BASE_URL, NEBIUS_API_KEY, GEMMA_MODEL, img_bytes)
-            except Exception as e:
-                primary_err = e
-        if PROVIDER == "featherless":
-            try:
-                if not FEATH_API_KEY:
-                    raise RuntimeError("FEATHERLESS_API_KEY missing")
-                return _openai_style_chat(FEATH_BASE_URL, FEATH_API_KEY, GEMMA_MODEL, img_bytes)
-            except Exception as e:
-                primary_err = e
-        # Fallback chain if primary failed or unknown provider
-        if FEATH_API_KEY:
+            if not NEBIUS_API_KEY: 
+                raise RuntimeError("NEBIUS_API_KEY missing")
+            return _openai_style_chat(NEBIUS_BASE_URL, NEBIUS_API_KEY, GEMMA_MODEL, img_bytes)
+        elif PROVIDER == "featherless":
+            if not FEATH_API_KEY: 
+                raise RuntimeError("FEATHERLESS_API_KEY missing")
             return _openai_style_chat(FEATH_BASE_URL, FEATH_API_KEY, GEMMA_MODEL, img_bytes)
-        raise primary_err or RuntimeError(f"Unknown PROVIDER: {PROVIDER}")
+        else:
+            raise RuntimeError(f"Unknown PROVIDER: {PROVIDER}")
     except Exception as e:
         logger.error(f"AI identification failed: {e}")
         raise
@@ -770,11 +742,11 @@ def _openai_style_chat(base_url: str, api_key: str, model_id: str, img_bytes: by
     }
     
     try:
-        r = requests.post(url, json=payload, headers=headers, timeout=90)
-        if r.status_code != 200:
-            raise RuntimeError(f"LLM HTTP {r.status_code}: {r.text[:200]}")
-        data = r.json()
-        return (data["choices"][0]["message"]["content"] or "").strip()
+    r = requests.post(url, json=payload, headers=headers, timeout=90)
+    if r.status_code != 200:
+        raise RuntimeError(f"LLM HTTP {r.status_code}: {r.text[:200]}")
+    data = r.json()
+    return (data["choices"][0]["message"]["content"] or "").strip()
     except requests.exceptions.Timeout:
         raise RuntimeError("AI service timeout - please try again")
     except requests.exceptions.RequestException as e:
@@ -787,17 +759,17 @@ def normalize_item_name(s: str) -> str:
         return ""
     
     # Enhanced brand and type recognition
-    BRANDS = {
-        "whiskas","tetley","kellogg's","kelloggs","campbell's","campbells","heinz",
-        "nestle","kraft","general mills","cheerios","oreo","oreos","pringles","lays","doritos",
-        "ice river","green bottle","great value","wheat thins","vegetable thins","raid"
-    }
-    GENERIC_TYPES = {
-        "water","toothpaste","deodorant","antiperspirant","soap","shampoo","conditioner",
-        "lotion","tea","coffee","cereal","pasta","rice","beans","sauce","salsa","cleaner",
-        "peanut butter","jam","jelly","tuna","chicken","beef","flour","sugar","salt","oil",
-        "crackers","cookies","soup","insect killer","spray"
-    }
+BRANDS = {
+    "whiskas","tetley","kellogg's","kelloggs","campbell's","campbells","heinz",
+    "nestle","kraft","general mills","cheerios","oreo","oreos","pringles","lays","doritos",
+    "ice river","green bottle","great value","wheat thins","vegetable thins","raid"
+}
+GENERIC_TYPES = {
+    "water","toothpaste","deodorant","antiperspirant","soap","shampoo","conditioner",
+    "lotion","tea","coffee","cereal","pasta","rice","beans","sauce","salsa","cleaner",
+    "peanut butter","jam","jelly","tuna","chicken","beef","flour","sugar","salt","oil",
+    "crackers","cookies","soup","insect killer","spray"
+}
     
     low = re.sub(r"[®™]", "", s.lower())
     for b in BRANDS: 

@@ -133,7 +133,7 @@ def log_event(action: str, actor: Optional[str], details: dict, level: str = "in
         "actor_email": actor,
         "details": json.dumps(details) if isinstance(details, dict) else str(details)
     }
-    
+
     # Log to file
     if level == "error":
         logger.error(f"Event: {action} by {actor} - {details}")
@@ -141,7 +141,7 @@ def log_event(action: str, actor: Optional[str], details: dict, level: str = "in
         logger.warning(f"Event: {action} by {actor} - {details}")
     else:
         logger.info(f"Event: {action} by {actor} - {details}")
-    
+
     # Log to database (without level field to avoid schema issues)
     try:
         sb.table("events").insert(log_data).execute()
@@ -179,7 +179,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 send = st.form_submit_button("📧 Send Login Code", use_container_width=True)
-            
+
             if send:
                 if not email or "@" not in email:
                     st.error("Please enter a valid email address.")
@@ -237,21 +237,22 @@ def auth_block() -> tuple[bool, Optional[str]]:
                                     except Exception:
                                         pass
                                     email = st.session_state["auth_email"]
-                                    
+
                                     # Enhanced volunteer upsert
                                     volunteer_data = {
                                         "email": email,
                                         "last_login_at": datetime.utcnow().isoformat(),
                                         "shift_started_at": datetime.utcnow().isoformat(),
-                                        "shift_ended_at": None
+                                        "shift_ended_at": None,
+                                        "login_count": 1  # Track login frequency
                                     }
-                                    
+
                                     sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
-                                    
+
                                     st.session_state["user_email"] = email
                                     st.session_state["shift_started"] = True
                                     st.session_state["last_activity_at"] = local_now()
-                                    
+
                                     log_event("login_success", email, {"method": "otp"})
                                     st.success("🎉 Welcome back! Your shift has started.")
                                     st.balloons()
@@ -266,7 +267,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
                                 st.rerun()
                             else:
                                 st.error(f"❌ Verification failed: {error_msg}")
-                            log_event("otp_verification_failed", st.session_state["auth_email"], {"error": error_msg}, "error")
+                            log_event("otp_verification_failed", st.session_state.get("auth_email"), {"error": error_msg}, "error")
             
             st.markdown('</div>', unsafe_allow_html=True)
     
@@ -289,15 +290,16 @@ def guard_cutoff_and_idle(email: str):
         cutoff = now.replace(hour=CUTOFF_HOUR, minute=0, second=0, microsecond=0)
         if now >= cutoff:
             end_shift(email, "cutoff_8pm")
+
     # Inactivity guard remains unchanged
     last = st.session_state.get("last_activity_at")
-    
+
     if last and (now - last).total_seconds() > INACTIVITY_MIN * 60:
         end_shift(email, "inactivity")
         st.session_state.clear()
         st.warning("⏰ You were logged out due to inactivity. Thank you for volunteering today!")
         st.stop()
-    
+
     st.session_state["last_activity_at"] = now
 
 # ------------------------ Main App Flow ------------------------
@@ -727,7 +729,7 @@ def preprocess_for_label(img: Image.Image) -> Image.Image:
     return img
 
 def gemma_item_name(img_bytes: bytes) -> str:
-    """Enhanced AI item identification with better error handling and fallback"""
+    """Enhanced AI item identification with better error handling"""
     try:
         primary_err = None
         if PROVIDER == "nebius":
