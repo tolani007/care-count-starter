@@ -339,11 +339,39 @@ def main():
     
     st.markdown(ModernUIComponents.create_status_cards(status_data), unsafe_allow_html=True)
 
+    ai_state_defaults = {
+        "ai_image_bytes": None,
+        "ai_detection_pending": False,
+        "ai_detection_processing": False,
+        "ai_detection_result": None,
+        "ai_detection_error": None,
+        "ai_detection_duration": None,
+    }
+
+    def ensure_ai_detection_defaults() -> None:
+        for key, default in ai_state_defaults.items():
+            if key not in st.session_state:
+                st.session_state[key] = default
+
+    def clear_ai_detection_results() -> None:
+        st.session_state["ai_detection_pending"] = False
+        st.session_state["ai_detection_processing"] = False
+        st.session_state["ai_detection_result"] = None
+        st.session_state["ai_detection_error"] = None
+        st.session_state["ai_detection_duration"] = None
+
+    def reset_ai_detection_state() -> None:
+        st.session_state["ai_image_bytes"] = None
+        clear_ai_detection_results()
+
+    ensure_ai_detection_defaults()
+
     # Modern sign-out button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("🔒 Sign Out", use_container_width=True, type="secondary"):
             end_shift(user_email, "manual")
+            reset_ai_detection_state()
             st.session_state.clear()
             st.success("✅ Signed out successfully. See you next time!")
             st.rerun()
@@ -410,11 +438,11 @@ def main():
     ), unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.subheader("📷 Camera Capture")
         cam = st.camera_input("Take a photo of the item", help="Position the item clearly in the frame")
-    
+
     with col2:
         st.subheader("📁 File Upload")
         up = st.file_uploader(
@@ -426,38 +454,96 @@ def main():
     img_file = cam or up
     if img_file:
         try:
-            img = Image.open(img_file).convert("RGB")
+            img_bytes = img_file.getvalue()
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+            png_bytes = _to_png_bytes(img)
+
+            if st.session_state["ai_image_bytes"] != png_bytes:
+                st.session_state["ai_image_bytes"] = png_bytes
+                clear_ai_detection_results()
+
             st.image(img, use_container_width=True, caption="Captured Image")
-            
+
             if st.button("🔍 Identify Item with AI", use_container_width=True, type="primary"):
-                with st.spinner("Analyzing image with AI..."):
-                    t0 = time.time()
-                    try:
-                        pre = preprocess_for_label(img)
-                        raw = gemma_item_name(_to_png_bytes(pre))
-                        processing_time = time.time() - t0
-                        
-                        norm = normalize_item_name(raw)
-                        
-                        if raw:
-                            st.success(f"🤖 **AI Detection:** {raw}")
-                        st.info(f"✨ **Normalized:** {norm or '(unknown)'} · ⏱️ {processing_time:.2f}s")
-                        
-                        st.session_state["scanned_item_name"] = norm or raw or ""
-                        st.session_state["last_activity_at"] = local_now()
-                        
-                        log_event("item_identified", user_email, {
-                            "raw_name": raw,
-                            "normalized_name": norm,
-                            "processing_time": processing_time
-                        })
-                        
-                    except Exception as e:
-                        st.error(f"❌ AI identification failed: {e}")
-                        log_event("ai_identification_failed", user_email, {"error": str(e)}, "error")
+                st.session_state["ai_detection_pending"] = True
         except Exception as e:
             st.error(f"❌ Failed to process image: {e}")
+            reset_ai_detection_state()
             log_event("image_processing_failed", user_email, {"error": str(e)}, "error")
+    elif st.session_state.get("ai_image_bytes") is not None:
+        reset_ai_detection_state()
+
+    status_placeholder = st.empty()
+    if st.session_state.get("ai_detection_processing"):
+        with status_placeholder.spinner("Analyzing image with AI..."):
+            if (
+                st.session_state.get("ai_detection_result") is None
+                and st.session_state.get("ai_detection_error") is None
+            ):
+                try:
+                    image_bytes = st.session_state.get("ai_image_bytes")
+                    if not image_bytes:
+                        raise RuntimeError("No image data available for AI detection.")
+
+                    t0 = time.time()
+                    source_img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+                    pre = preprocess_for_label(source_img)
+                    raw = gemma_item_name(_to_png_bytes(pre))
+                    processing_time = time.time() - t0
+
+                    norm = normalize_item_name(raw)
+
+                    st.session_state["ai_detection_result"] = {"raw": raw, "normalized": norm}
+                    st.session_state["ai_detection_duration"] = processing_time
+
+                    st.session_state["scanned_item_name"] = norm or raw or ""
+                    st.session_state["last_activity_at"] = local_now()
+
+                    log_event("item_identified", user_email, {
+                        "raw_name": raw,
+                        "normalized_name": norm,
+                        "processing_time": processing_time
+                    })
+                except Exception as e:
+                    st.session_state["ai_detection_error"] = str(e)
+                    st.session_state["ai_detection_duration"] = None
+                    log_event("ai_identification_failed", user_email, {"error": str(e)}, "error")
+                finally:
+                    st.session_state["ai_detection_processing"] = False
+                    st.rerun()
+            else:
+                time.sleep(0.1)
+    else:
+        error_msg = st.session_state.get("ai_detection_error")
+        result = st.session_state.get("ai_detection_result") or {}
+        duration = st.session_state.get("ai_detection_duration")
+
+        if error_msg:
+            st.error(f"❌ AI identification failed: {error_msg}")
+        elif result:
+            raw_name = result.get("raw")
+            norm_name = result.get("normalized")
+
+            if raw_name:
+                st.success(f"🤖 **AI Detection:** {raw_name}")
+
+            info_parts = []
+            info_parts.append(f"✨ **Normalized:** {norm_name or '(unknown)'}")
+            if isinstance(duration, (int, float)):
+                info_parts.append(f"⏱️ {duration:.2f}s")
+            st.info(" · ".join(info_parts))
+
+    if st.session_state.get("ai_detection_pending"):
+        if not st.session_state.get("ai_image_bytes"):
+            st.session_state["ai_detection_error"] = "Please capture or upload an image before running AI detection."
+            st.session_state["ai_detection_pending"] = False
+        elif not st.session_state.get("ai_detection_processing"):
+            st.session_state["ai_detection_processing"] = True
+            st.session_state["ai_detection_error"] = None
+            st.session_state["ai_detection_result"] = None
+            st.session_state["ai_detection_duration"] = None
+            st.session_state["ai_detection_pending"] = False
+            st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
