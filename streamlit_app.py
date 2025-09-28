@@ -150,7 +150,7 @@ def log_event(action: str, actor: Optional[str], details: dict, level: str = "in
 
 # ------------------------ Modern Authentication UI ------------------------
 def auth_block() -> tuple[bool, Optional[str]]:
-    """Enhanced authentication with modern UI"""
+    """Enhanced authentication with modern UI and improved loading states"""
     if "auth_email" not in st.session_state:
         st.session_state["auth_email"] = None
     if "user_email" in st.session_state:
@@ -162,36 +162,57 @@ def auth_block() -> tuple[bool, Optional[str]]:
         "Snap items, track visits, and make an impact."
     ), unsafe_allow_html=True)
 
-    # Modern login form
+    # Modern login form with improved state management
     with st.container():
         st.markdown('<div class="modern-card">', unsafe_allow_html=True)
         st.subheader("Sign In")
         st.markdown("Enter your email to receive a secure login code.")
         
-        with st.form("otp_request", clear_on_submit=False):
+        # Use a single form for better state management
+        with st.form("auth_form", clear_on_submit=False):
             email = st.text_input(
                 "Email Address", 
                 value=st.session_state.get("auth_email") or "", 
                 placeholder="your.email@example.com",
-                help="We'll send you a secure 6-digit code"
+                help="We'll send you a secure 6-digit code",
+                disabled=st.session_state.get("auth_email") is not None
             )
             
+            # Show different buttons based on state
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                send = st.form_submit_button("📧 Send Login Code", use_container_width=True)
+                if not st.session_state.get("auth_email"):
+                    send = st.form_submit_button("📧 Send Login Code", use_container_width=True, type="primary")
+                else:
+                    send = st.form_submit_button("📧 Resend Code", use_container_width=True, type="secondary")
             
             if send:
                 if not email or "@" not in email:
                     st.error("Please enter a valid email address.")
                 else:
+                    # Use placeholder for better UX during loading
+                    status_placeholder = st.empty()
                     try:
-                        with st.spinner("Sending login code..."):
-                            sb.auth.sign_in_with_otp({"email": email, "shouldCreateUser": True})
-                            st.session_state["auth_email"] = email
-                            st.success("✅ Login code sent! Check your email.")
-                            log_event("otp_requested", email, {"method": "email"})
+                        with status_placeholder.container():
+                            st.markdown(ModernUIComponents.create_status_message("Sending login code...", "loading"), unsafe_allow_html=True)
+                        
+                        # Perform the actual API call
+                        sb.auth.sign_in_with_otp({"email": email, "shouldCreateUser": True})
+                        st.session_state["auth_email"] = email
+                        
+                        # Clear status and show success
+                        status_placeholder.empty()
+                        st.markdown(ModernUIComponents.create_status_message("Login code sent! Check your email.", "success"), unsafe_allow_html=True)
+                        log_event("otp_requested", email, {"method": "email"})
+                        
+                        # Small delay to prevent immediate rerun
+                        time.sleep(0.5)
+                        st.rerun()
+                        
                     except Exception as e:
                         error_msg = str(e)
+                        status_placeholder.empty()
+                        
                         if "429" in error_msg or "Too Many Requests" in error_msg:
                             st.warning("⏳ Please wait a moment before requesting another code. For security, there's a brief delay between requests.")
                         elif "Invalid email" in error_msg:
@@ -202,7 +223,7 @@ def auth_block() -> tuple[bool, Optional[str]]:
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # OTP verification form
+    # OTP verification form - only show if email is set
     if st.session_state.get("auth_email"):
         with st.container():
             st.markdown('<div class="modern-card">', unsafe_allow_html=True)
@@ -219,54 +240,80 @@ def auth_block() -> tuple[bool, Optional[str]]:
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    ok = st.form_submit_button("✅ Verify & Start Shift", use_container_width=True)
+                    verify_btn = st.form_submit_button("✅ Verify & Start Shift", use_container_width=True, type="primary")
                 
-                if ok:
+                if verify_btn:
                     if len(code) != 6 or not code.isdigit():
                         st.error("Please enter a valid 6-digit code.")
                     else:
+                        # Use placeholder for verification status
+                        verify_placeholder = st.empty()
                         try:
-                            with st.spinner("Verifying code..."):
-                                res = sb.auth.verify_otp({"email": st.session_state["auth_email"], "token": code, "type": "email"})
-                                if res and res.user:
-                                    # Ensure subsequent PostgREST requests carry the user's JWT for RLS
-                                    try:
-                                        token = getattr(getattr(res, "session", None), "access_token", None)
-                                        if token:
-                                            sb.postgrest.auth(token)
-                                    except Exception:
-                                        pass
-                                    email = st.session_state["auth_email"]
-                                    
-                                    # Enhanced volunteer upsert
-                                    volunteer_data = {
-                                        "email": email,
-                                        "last_login_at": datetime.utcnow().isoformat(),
-                                        "shift_started_at": datetime.utcnow().isoformat(),
-                                        "shift_ended_at": None
-                                    }
-                                    
-                                    sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
-                                    
-                                    st.session_state["user_email"] = email
-                                    st.session_state["shift_started"] = True
-                                    st.session_state["last_activity_at"] = local_now()
-                                    
-                                    log_event("login_success", email, {"method": "otp"})
-                                    st.success("🎉 Welcome back! Your shift has started.")
-                                    st.balloons()
-                                    return True, email
+                            with verify_placeholder.container():
+                                st.markdown(ModernUIComponents.create_status_message("Verifying code...", "loading"), unsafe_allow_html=True)
+                            
+                            # Perform verification
+                            res = sb.auth.verify_otp({"email": st.session_state["auth_email"], "token": code, "type": "email"})
+                            
+                            if res and res.user:
+                                # Clear verification status
+                                verify_placeholder.empty()
+                                
+                                # Ensure subsequent PostgREST requests carry the user's JWT for RLS
+                                try:
+                                    token = getattr(getattr(res, "session", None), "access_token", None)
+                                    if token:
+                                        sb.postgrest.auth(token)
+                                except Exception:
+                                    pass
+                                
+                                email = st.session_state["auth_email"]
+                                
+                                # Enhanced volunteer upsert
+                                volunteer_data = {
+                                    "email": email,
+                                    "last_login_at": datetime.utcnow().isoformat(),
+                                    "shift_started_at": datetime.utcnow().isoformat(),
+                                    "shift_ended_at": None
+                                }
+                                
+                                sb.table("volunteers").upsert(volunteer_data, on_conflict="email").execute()
+                                
+                                st.session_state["user_email"] = email
+                                st.session_state["shift_started"] = True
+                                st.session_state["last_activity_at"] = local_now()
+                                
+                                log_event("login_success", email, {"method": "otp"})
+                                st.success("🎉 Welcome back! Your shift has started.")
+                                st.balloons()
+                                
+                                # Small delay before rerun for better UX
+                                time.sleep(1)
+                                st.rerun()
+                                
                         except Exception as e:
                             error_msg = str(e)
+                            verify_placeholder.empty()
+                            
                             if "expired" in error_msg.lower() or "invalid" in error_msg.lower():
                                 st.error("❌ This code has expired or is invalid. Please request a new code.")
                                 # Clear the auth_email to allow new code request
                                 if "auth_email" in st.session_state:
                                     del st.session_state["auth_email"]
+                                # Small delay before rerun
+                                time.sleep(0.5)
                                 st.rerun()
                             else:
                                 st.error(f"❌ Verification failed: {error_msg}")
                             log_event("otp_verification_failed", st.session_state["auth_email"], {"error": error_msg}, "error")
+            
+            # Add option to start over
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("🔄 Use Different Email", use_container_width=True, type="secondary"):
+                    if "auth_email" in st.session_state:
+                        del st.session_state["auth_email"]
+                    st.rerun()
             
             st.markdown('</div>', unsafe_allow_html=True)
     

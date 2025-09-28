@@ -482,6 +482,87 @@ class ModernUIComponents:
             to { transform: rotate(360deg); }
         }
         
+        /* Streamlit Spinner Overrides */
+        .stSpinner > div {
+            background-color: var(--primary-purple) !important;
+            border-color: var(--primary-purple) !important;
+        }
+        
+        /* Prevent layout shifts during loading */
+        .stSpinner {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        /* Loading state containers */
+        .loading-container {
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-800);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-700);
+            padding: var(--space-4);
+        }
+        
+        /* Smooth transitions for form states */
+        .modern-card {
+            transition: all 0.3s ease;
+        }
+        
+        .modern-card.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        /* Prevent content jumping during state changes */
+        .form-section {
+            min-height: 200px;
+        }
+        
+        /* Status messages */
+        .status-message {
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            margin: var(--space-2) 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .status-info {
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            color: var(--gray-200);
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+        
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+        
+        .status-loading {
+            background: rgba(107, 70, 193, 0.1);
+            border: 1px solid var(--primary-purple);
+            color: var(--primary-purple);
+        }
+        
         /* Animations */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -613,6 +694,29 @@ class ModernUIComponents:
     def create_loading_spinner() -> str:
         """Create a loading spinner"""
         return '<div class="loading"></div>'
+    
+    @staticmethod
+    def create_loading_container(message: str = "Loading...") -> str:
+        """Create a loading container with message"""
+        return f'''
+        <div class="loading-container">
+            <div class="loading"></div>
+            <span style="margin-left: var(--space-3); color: var(--gray-300);">{message}</span>
+        </div>
+        '''
+    
+    @staticmethod
+    def create_status_message(message: str, type: str = "info") -> str:
+        """Create a status message with consistent styling"""
+        icon_map = {
+            "info": "ℹ️",
+            "success": "✅", 
+            "warning": "⚠️",
+            "error": "❌",
+            "loading": "🔄"
+        }
+        icon = icon_map.get(type, "ℹ️")
+        return f'<div class="status-message status-{type}">{icon} {message}</div>'
 
 def apply_modern_ui():
     """Apply modern UI styling to the Streamlit app"""
