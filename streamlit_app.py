@@ -692,53 +692,60 @@ def main():
             if not name_clean:
                 st.warning("⚠️ Item name is required.")
             else:
-                with st.spinner("Saving item..."):
-                    ts_iso = datetime.utcnow().isoformat()
-                    ingest_id = deterministic_ingest_id(int(v["id"]), user_email, name_clean, int(quantity), ts_iso)
+                save_status = st.empty()
+                with save_status.container():
+                    st.markdown(ModernUIComponents.create_status_message("Saving item...", "loading"), unsafe_allow_html=True)
+                ts_iso = datetime.utcnow().isoformat()
+                ingest_id = deterministic_ingest_id(int(v["id"]), user_email, name_clean, int(quantity), ts_iso)
+                
+                try:
+                    ok, msg = try_rpc_ingest(
+                        email=user_email, v_id=int(v["id"]), name=name_clean, qty=int(quantity),
+                        category=clean_text(category, 80), unit=clean_text(unit, 40),
+                        barcode=clean_text(barcode, 64), ts_iso=ts_iso, ingest_id=ingest_id
+                    )
                     
+                    if ok:
+                        save_status.empty()
+                        st.markdown(ModernUIComponents.create_status_message("Item logged successfully!", "success"), unsafe_allow_html=True)
+                        log_event("item_logged", user_email, {
+                            "visit_id": v["id"],
+                            "item_name": name_clean,
+                            "quantity": quantity
+                        })
+                    else:
+                        st.markdown(ModernUIComponents.create_status_message(f"{msg}. Trying fallback method...", "warning"), unsafe_allow_html=True)
+                        fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
+                                               clean_text(category,80), clean_text(unit,40),
+                                               clean_text(barcode,64), ts_iso, ingest_id)
+                        save_status.empty()
+                        st.markdown(ModernUIComponents.create_status_message("Item logged successfully (fallback method)!", "success"), unsafe_allow_html=True)
+                        log_event("item_logged_fallback", user_email, {
+                            "visit_id": v["id"],
+                            "item_name": name_clean,
+                            "quantity": quantity
+                        })
+                except Exception as e:
                     try:
-                        ok, msg = try_rpc_ingest(
-                            email=user_email, v_id=int(v["id"]), name=name_clean, qty=int(quantity),
-                            category=clean_text(category, 80), unit=clean_text(unit, 40),
-                            barcode=clean_text(barcode, 64), ts_iso=ts_iso, ingest_id=ingest_id
-                        )
-                        
-                        if ok:
-                            st.success("✅ Item logged successfully!")
-                            log_event("item_logged", user_email, {
-                                "visit_id": v["id"],
-                                "item_name": name_clean,
-                                "quantity": quantity
-                            })
-                        else:
-                            st.warning(f"⚠️ {msg}. Trying fallback method...")
-                            fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
-                                                   clean_text(category,80), clean_text(unit,40),
-                                                   clean_text(barcode,64), ts_iso, ingest_id)
-                            st.success("✅ Item logged successfully (fallback method)!")
-                            log_event("item_logged_fallback", user_email, {
-                                "visit_id": v["id"],
-                                "item_name": name_clean,
-                                "quantity": quantity
-                            })
-                    except Exception as e:
-                        try:
-                            fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
-                                                   clean_text(category,80), clean_text(unit,40),
-                                                   clean_text(barcode,64), ts_iso, ingest_id)
-                            st.success("✅ Item logged successfully (fallback method)!")
-                            log_event("item_logged_fallback", user_email, {
-                                "visit_id": v["id"],
-                                "item_name": name_clean,
-                                "quantity": quantity
-                            })
-                        except Exception as e2:
-                            st.error(f"❌ Failed to log item: {e2}")
-                            log_event("item_log_failed", user_email, {"error": str(e2)}, "error")
-                    
-                    st.session_state["last_activity_at"] = local_now()
-                    st.session_state["scanned_item_name"] = name_clean
-                    st.rerun()
+                        fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
+                                               clean_text(category,80), clean_text(unit,40),
+                                               clean_text(barcode,64), ts_iso, ingest_id)
+                        save_status.empty()
+                        st.markdown(ModernUIComponents.create_status_message("Item logged successfully (fallback method)!", "success"), unsafe_allow_html=True)
+                        log_event("item_logged_fallback", user_email, {
+                            "visit_id": v["id"],
+                            "item_name": name_clean,
+                            "quantity": quantity
+                        })
+                    except Exception as e2:
+                        save_status.empty()
+                        st.error(f"❌ Failed to log item: {e2}")
+                        log_event("item_log_failed", user_email, {"error": str(e2)}, "error")
+                
+                st.session_state["last_activity_at"] = local_now()
+                st.session_state["scanned_item_name"] = name_clean
+                time.sleep(0.2)
+                st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
 
