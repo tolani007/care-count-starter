@@ -594,6 +594,60 @@ class ModernUIComponents:
             white-space: nowrap;
             border: 0;
         }
+
+        /* Laurier Cares Bags Celebration Animation */
+        .bags-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+        .bag {
+            position: absolute;
+            top: -120px;
+            width: 80px;
+            height: 100px;
+            background: linear-gradient(180deg, #7C3AED, #5B21B6);
+            border-radius: 8px 8px 12px 12px;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid rgba(255,255,255,0.2);
+            animation: bagDrop 2.8s ease-in forwards;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 11px;
+            text-align: center;
+            padding: 6px;
+        }
+        .bag:before {
+            content: "";
+            position: absolute;
+            top: -14px;
+            left: 22px;
+            width: 36px;
+            height: 22px;
+            border: 3px solid rgba(255,255,255,0.7);
+            border-bottom: none;
+            border-radius: 18px 18px 0 0;
+        }
+        .bag .label {
+            font-size: 10px;
+            line-height: 1.1;
+            letter-spacing: 0.3px;
+        }
+        @keyframes bagDrop {
+            0% { transform: translateY(-140px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            80% { transform: translateY(100vh) rotate(10deg); }
+            100% { transform: translateY(110vh) rotate(14deg); opacity: 0; }
+        }
+        .bags-overlay.fade-out { animation: overlayFade 0.4s ease forwards; }
+        @keyframes overlayFade {
+            to { opacity: 0; }
+        }
         
         /* Focus states for accessibility */
         button:focus,
