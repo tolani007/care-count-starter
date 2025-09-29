@@ -285,7 +285,34 @@ def auth_block() -> tuple[bool, Optional[str]]:
                                 
                                 log_event("login_success", email, {"method": "otp"})
                                 st.success("🎉 Welcome back! Your shift has started.")
-                                st.balloons()
+                                # Custom Laurier Cares bags celebration
+                                bags_html = """
+                                <div class="bags-overlay" id="bags-overlay">
+                                  <!-- 12 bags across random x positions -->
+                                </div>
+                                <script>
+                                  (function(){
+                                    const overlay = document.getElementById('bags-overlay');
+                                    if (!overlay) return;
+                                    const count = 12;
+                                    for (let i = 0; i < count; i++) {
+                                      const bag = document.createElement('div');
+                                      bag.className = 'bag';
+                                      bag.style.left = Math.random()*100 + 'vw';
+                                      bag.style.animationDelay = (Math.random()*0.8).toFixed(2)+'s';
+                                      bag.style.transform = `translateY(-140px) rotate(${(Math.random()*10-5).toFixed(1)}deg)`;
+                                      const label = document.createElement('div');
+                                      label.className = 'label';
+                                      label.textContent = 'Laurier\nCares';
+                                      bag.appendChild(label);
+                                      overlay.appendChild(bag);
+                                    }
+                                    setTimeout(()=>{ overlay.classList.add('fade-out'); }, 2400);
+                                    setTimeout(()=>{ overlay.remove(); }, 3000);
+                                  })();
+                                </script>
+                                """
+                                st.markdown(bags_html, unsafe_allow_html=True)
                                 
                                 # Small delay before rerun for better UX
                                 time.sleep(1)
@@ -434,9 +461,12 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        if not active_visit and st.button("🚀 Start New Visit", use_container_width=True, type="primary"):
-            try:
-                with st.spinner("Creating visit..."):
+        if not active_visit:
+            visit_status = st.empty()
+            if st.button("🚀 Start New Visit", use_container_width=True, type="primary"):
+                try:
+                    with visit_status.container():
+                        st.markdown(ModernUIComponents.create_status_message("Creating visit...", "loading"), unsafe_allow_html=True)
                     payload = {
                         "visit_code": fallback_visit_code(),
                         "started_at": datetime.utcnow().isoformat(),
@@ -447,27 +477,35 @@ def main():
                     if not v.get("visit_code"):
                         v["visit_code"] = payload["visit_code"]
                     st.session_state["active_visit"] = v
-                    st.success(f"✅ Visit #{v['id']} started")
+                    visit_status.empty()
+                    st.markdown(ModernUIComponents.create_status_message(f"Visit #{v['id']} started", "success"), unsafe_allow_html=True)
                     st.info(f"**Visit Code:** `{v['visit_code']}`")
                     log_event("visit_start", user_email, {"visit_id": v["id"], "visit_code": v["visit_code"]})
+                    time.sleep(0.4)
                     st.rerun()
-            except Exception as e:
-                st.error(f"❌ Could not start visit: {e}")
-                log_event("visit_start_failed", user_email, {"error": str(e)}, "error")
+                except Exception as e:
+                    visit_status.empty()
+                    st.error(f"❌ Could not start visit: {e}")
+                    log_event("visit_start_failed", user_email, {"error": str(e)}, "error")
 
     with col2:
-        if active_visit and st.button("🏁 End Visit", use_container_width=True, type="secondary"):
-            try:
-                with st.spinner("Ending visit..."):
+        if active_visit:
+            end_status = st.empty()
+            if st.button("🏁 End Visit", use_container_width=True, type="secondary"):
+                try:
+                    with end_status.container():
+                        st.markdown(ModernUIComponents.create_status_message("Ending visit...", "loading"), unsafe_allow_html=True)
                     sb.table("visits").update({"ended_at": datetime.utcnow().isoformat()}) \
                       .eq("id", active_visit["id"]).execute()
-                    st.success("✅ Visit completed successfully")
+                    st.markdown(ModernUIComponents.create_status_message("Visit completed successfully", "success"), unsafe_allow_html=True)
                     log_event("visit_end", user_email, {"visit_id": active_visit["id"]})
                     st.session_state.pop("active_visit", None)
+                    time.sleep(0.3)
                     st.rerun()
-            except Exception as e:
-                st.error(f"❌ Could not end visit: {e}")
-                log_event("visit_end_failed", user_email, {"error": str(e)}, "error")
+                except Exception as e:
+                    end_status.empty()
+                    st.error(f"❌ Could not end visit: {e}")
+                    log_event("visit_end_failed", user_email, {"error": str(e)}, "error")
 
     with col3:
         if st.session_state.get("active_visit"):
