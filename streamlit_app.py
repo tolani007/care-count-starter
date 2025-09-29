@@ -785,7 +785,7 @@ def main():
                         fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
                                                clean_text(category,80), clean_text(unit,40),
                                                clean_text(barcode,64), ts_iso, ingest_id,
-                                               )
+                                               weather_type=weather_type, temp_c=temp_c)
                         # After fallback insert, attach weather fields as part of payload
                         try:
                             if weather_type is not None or temp_c is not None:
@@ -806,7 +806,8 @@ def main():
                     try:
                         fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
                                                clean_text(category,80), clean_text(unit,40),
-                                               clean_text(barcode,64), ts_iso, ingest_id)
+                                               clean_text(barcode,64), ts_iso, ingest_id,
+                                               weather_type=weather_type, temp_c=temp_c)
                         # Attach weather after direct insert
                         try:
                             if weather_type is not None or temp_c is not None:
@@ -1124,7 +1125,8 @@ def try_rpc_ingest(email: str, v_id: int, name: str, qty: int,
 
 def fallback_direct_insert(email: str, v_id: int, name: str, qty: int,
                            category: Optional[str], unit: Optional[str],
-                           barcode: Optional[str], ts_iso: str, ingest_id: str) -> None:
+                           barcode: Optional[str], ts_iso: str, ingest_id: str,
+                           weather_type: Optional[str] = None, temp_c: Optional[float] = None) -> None:
     """Enhanced fallback insertion with better error handling"""
     payload = {
         "visit_id": v_id,
@@ -1135,8 +1137,8 @@ def fallback_direct_insert(email: str, v_id: int, name: str, qty: int,
         "unit": unit,
         "qty": qty,
         "barcode": barcode,
-        "weather_type": None,
-        "temp_c": None,
+        "weather_type": weather_type,
+        "temp_c": temp_c,
         "ingest_id": ingest_id
     }
     
