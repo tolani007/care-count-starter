@@ -440,6 +440,60 @@ def main():
 
     ensure_ai_detection_defaults()
 
+    # ---------------- Weather (Laurier Waterloo campus) ----------------
+    if "_weather_cache" not in st.session_state:
+        st.session_state["_weather_cache"] = {"at": None, "type": None, "temp_c": None}
+
+    def _map_weather_code(code: int) -> str:
+        try:
+            c = int(code)
+        except Exception:
+            return None
+        # Open-Meteo weather codes grouped into simple buckets
+        if c == 0:
+            return "clear"
+        if c in {1, 2, 3}:
+            return "cloudy"
+        if c in {45, 48}:
+            return "fog"
+        if c in {51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82}:
+            return "rain"
+        if c in {71, 73, 75, 77, 85, 86}:
+            return "snow"
+        if c in {95, 96, 99}:
+            return "thunderstorm"
+        return "unknown"
+
+    def fetch_weather_at_laurier() -> tuple[Optional[str], Optional[float]]:
+        """Fetch current weather near Wilfrid Laurier University, Waterloo (lat 43.4753, lon -80.5273)."""
+        try:
+            lat, lon = 43.4753, -80.5273
+            url = (
+                f"https://api.open-meteo.com/v1/forecast" \
+                f"?latitude={lat}&longitude={lon}&current=temperature_2m,weather_code&timezone=auto"
+            )
+            r = requests.get(url, timeout=6)
+            if r.status_code != 200:
+                return None, None
+            data = r.json() or {}
+            cur = data.get("current") or {}
+            temp_c = cur.get("temperature_2m")
+            code = cur.get("weather_code")
+            return _map_weather_code(code), float(temp_c) if temp_c is not None else None
+        except Exception:
+            return None, None
+
+    def get_cached_weather() -> tuple[Optional[str], Optional[float]]:
+        now = datetime.utcnow()
+        cache = st.session_state.get("_weather_cache") or {}
+        ts = cache.get("at")
+        # refresh every 10 minutes
+        if ts and isinstance(ts, datetime) and (now - ts).total_seconds() < 600:
+            return cache.get("type"), cache.get("temp_c")
+        wtype, temp_c = fetch_weather_at_laurier()
+        st.session_state["_weather_cache"] = {"at": now, "type": wtype, "temp_c": temp_c}
+        return wtype, temp_c
+
     # Modern sign-out button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
@@ -700,6 +754,7 @@ def main():
                     st.markdown(ModernUIComponents.create_status_message("Saving item...", "loading"), unsafe_allow_html=True)
                 ts_iso = datetime.utcnow().isoformat()
                 ingest_id = deterministic_ingest_id(int(v["id"]), user_email, name_clean, int(quantity), ts_iso)
+                weather_type, temp_c = get_cached_weather()
                 
                 try:
                     ok, msg = try_rpc_ingest(
@@ -711,16 +766,35 @@ def main():
                     if ok:
                         save_status.empty()
                         st.markdown(ModernUIComponents.create_status_message("Item logged successfully!", "success"), unsafe_allow_html=True)
+                        # Best-effort: attach weather on the row created by RPC using ingest_id
+                        try:
+                            if weather_type is not None or temp_c is not None:
+                                sb.table("visit_items_p").update({
+                                    "weather_type": weather_type,
+                                    "temp_c": temp_c
+                                }).eq("ingest_id", ingest_id).execute()
+                        except Exception:
+                            pass
                         log_event("item_logged", user_email, {
                             "visit_id": v["id"],
                             "item_name": name_clean,
                             "quantity": quantity
                         })
                     else:
-                        st.markdown(ModernUIComponents.create_status_message(f"{msg}. Trying fallback method...", "warning"), unsafe_allow_html=True)
+                        st.markdown(ModernUIComponents.create_status_message("Using reliable save path...", "info"), unsafe_allow_html=True)
                         fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
                                                clean_text(category,80), clean_text(unit,40),
-                                               clean_text(barcode,64), ts_iso, ingest_id)
+                                               clean_text(barcode,64), ts_iso, ingest_id,
+                                               )
+                        # After fallback insert, attach weather fields as part of payload
+                        try:
+                            if weather_type is not None or temp_c is not None:
+                                sb.table("visit_items_p").update({
+                                    "weather_type": weather_type,
+                                    "temp_c": temp_c
+                                }).eq("ingest_id", ingest_id).execute()
+                        except Exception:
+                            pass
                         save_status.empty()
                         st.markdown(ModernUIComponents.create_status_message("Item logged successfully (fallback method)!", "success"), unsafe_allow_html=True)
                         log_event("item_logged_fallback", user_email, {
@@ -733,6 +807,15 @@ def main():
                         fallback_direct_insert(user_email, int(v["id"]), name_clean, int(quantity),
                                                clean_text(category,80), clean_text(unit,40),
                                                clean_text(barcode,64), ts_iso, ingest_id)
+                        # Attach weather after direct insert
+                        try:
+                            if weather_type is not None or temp_c is not None:
+                                sb.table("visit_items_p").update({
+                                    "weather_type": weather_type,
+                                    "temp_c": temp_c
+                                }).eq("ingest_id", ingest_id).execute()
+                        except Exception:
+                            pass
                         save_status.empty()
                         st.markdown(ModernUIComponents.create_status_message("Item logged successfully (fallback method)!", "success"), unsafe_allow_html=True)
                         log_event("item_logged_fallback", user_email, {
