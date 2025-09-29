@@ -560,7 +560,9 @@ def main():
 
     status_placeholder = st.empty()
     if st.session_state.get("ai_detection_processing"):
-        with status_placeholder.spinner("Analyzing image with AI..."):
+        # Use a stable container with a custom loading message instead of calling spinner on the placeholder
+        with status_placeholder.container():
+            st.markdown(ModernUIComponents.create_status_message("Analyzing image with AI...", "loading"), unsafe_allow_html=True)
             if (
                 st.session_state.get("ai_detection_result") is None
                 and st.session_state.get("ai_detection_error") is None
