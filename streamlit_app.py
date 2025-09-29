@@ -682,7 +682,9 @@ def main():
         help="Product barcode for inventory tracking"
     )
 
-    save_disabled = not st.session_state.get("active_visit")
+    if "saving_item" not in st.session_state:
+        st.session_state["saving_item"] = False
+    save_disabled = (not st.session_state.get("active_visit")) or st.session_state.get("saving_item", False)
     if st.button("✅ Save Item to Visit", disabled=save_disabled, use_container_width=True, type="primary"):
         v = st.session_state.get("active_visit")
         if not v:
@@ -692,6 +694,7 @@ def main():
             if not name_clean:
                 st.warning("⚠️ Item name is required.")
             else:
+                st.session_state["saving_item"] = True
                 save_status = st.empty()
                 with save_status.container():
                     st.markdown(ModernUIComponents.create_status_message("Saving item...", "loading"), unsafe_allow_html=True)
@@ -744,63 +747,67 @@ def main():
                 
                 st.session_state["last_activity_at"] = local_now()
                 st.session_state["scanned_item_name"] = name_clean
-                time.sleep(0.2)
-                st.rerun()
+                st.session_state["saving_item"] = False
+                # Refresh the visit items view in-place to avoid rerun and page jitter
+                try:
+                    if "_render_visit_items" in globals():
+                        _render_visit_items()
+                except Exception:
+                    pass
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Enhanced visit items view
-    if st.session_state.get("active_visit"):
-        st.markdown(ModernUIComponents.create_modern_form_section(
-            "🧾 Current Visit Items",
-            "Review and manage items in the current visit"
-        ), unsafe_allow_html=True)
-        
-        rows = load_items_for_visit(int(st.session_state["active_visit"]["id"]))
-        if rows:
-            df = pd.DataFrame(rows)
-            
-            # Enhanced dataframe display
-            st.dataframe(
-                df, 
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "timestamp": st.column_config.DatetimeColumn("Time", format="MM/DD/YY HH:mm"),
-                    "item_name": st.column_config.TextColumn("Item Name", width="medium"),
-                    "qty": st.column_config.NumberColumn("Quantity", width="small"),
-                    "category": st.column_config.TextColumn("Category", width="small"),
-                    "unit": st.column_config.TextColumn("Unit", width="small")
-                }
-            )
-            
-            # Enhanced delete functionality
-            with st.expander("🗑️ Delete Item (if mis-logged)"):
-                if rows:
-                    item_options = {f"{r['item_name']} (Qty: {r['qty']})": r["id"] for r in rows if "id" in r}
-                    selected_item = st.selectbox("Select item to delete", list(item_options.keys()))
-                    
-                    if st.button("🗑️ Delete Selected Item", type="secondary"):
-                        item_id = item_options[selected_item]
-                        try:
-                            # Try both tables safely
+    # Enhanced visit items view (rendered via stable placeholder to avoid jitter)
+    items_section_placeholder = st.empty()
+
+    def _render_visit_items():
+        if not st.session_state.get("active_visit"):
+            return
+        with items_section_placeholder.container():
+            st.markdown(ModernUIComponents.create_modern_form_section(
+                "🧾 Current Visit Items",
+                "Review and manage items in the current visit"
+            ), unsafe_allow_html=True)
+            rows = load_items_for_visit(int(st.session_state["active_visit"]["id"]))
+            if rows:
+                df = pd.DataFrame(rows)
+                st.dataframe(
+                    df,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "timestamp": st.column_config.DatetimeColumn("Time", format="MM/DD/YY HH:mm"),
+                        "item_name": st.column_config.TextColumn("Item Name", width="medium"),
+                        "qty": st.column_config.NumberColumn("Quantity", width="small"),
+                        "category": st.column_config.TextColumn("Category", width="small"),
+                        "unit": st.column_config.TextColumn("Unit", width="small")
+                    }
+                )
+                with st.expander("🗑️ Delete Item (if mis-logged)"):
+                    if rows:
+                        item_options = {f"{r['item_name']} (Qty: {r['qty']})": r["id"] for r in rows if "id" in r}
+                        selected_item = st.selectbox("Select item to delete", list(item_options.keys()))
+                        if st.button("🗑️ Delete Selected Item", type="secondary"):
+                            item_id = item_options[selected_item]
                             try:
-                                delete_item("visit_items_p", int(item_id))
-                            except Exception:
-                                delete_item("visit_items", int(item_id))
-                            
-                            st.success("✅ Item deleted successfully")
-                            log_event("item_deleted", user_email, {"item_id": item_id})
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"❌ Failed to delete item: {e}")
-                            log_event("item_delete_failed", user_email, {"error": str(e)}, "error")
-                else:
-                    st.info("No items to delete")
-        else:
-            st.info("📝 No items logged for this visit yet.")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+                                try:
+                                    delete_item("visit_items_p", int(item_id))
+                                except Exception:
+                                    delete_item("visit_items", int(item_id))
+                                st.success("✅ Item deleted successfully")
+                                log_event("item_deleted", user_email, {"item_id": item_id})
+                                # Refresh list without full rerun
+                                _render_visit_items()
+                            except Exception as e:
+                                st.error(f"❌ Failed to delete item: {e}")
+                                log_event("item_delete_failed", user_email, {"error": str(e)}, "error")
+                    else:
+                        st.info("No items to delete")
+            else:
+                st.info("📝 No items logged for this visit yet.")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    _render_visit_items()
 
     # Enhanced analytics section
     st.markdown(ModernUIComponents.create_modern_form_section(
